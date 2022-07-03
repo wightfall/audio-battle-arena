@@ -1,0 +1,314 @@
+#include "interface.bgt"
+sound_pool pool_item;
+
+class InventoryItem{
+Item@ item;
+uint quantity;
+InventoryItem(Item@ item, int quantity) {
+@this.item = item;
+this.quantity = quantity;
+}
+}
+
+class StoreItem {
+string name;
+string description;
+int price;
+StoreItem(string name, string description, int price) {
+this.name = name;
+this.description = description;
+this.price = price;
+}
+}
+
+class Item: Usable {
+//base class of all the item
+string name;
+string description;
+Item(string name, string description) {
+this.name = name;
+this.description = description;
+}
+
+void use(hero@ h) {
+//please overwrite this method in the subclass
+}
+}
+
+class Potion: Item {
+//an example item class (I wrote this for demonstration purpose only)
+double hp_percent_increase;
+double mp_percent_increase;
+
+Potion(string name, string description, double hp_percent_increase, double mp_percent_increase) {
+super(name, description);
+this.hp_percent_increase = hp_percent_increase;
+this.mp_percent_increase = mp_percent_increase;
+}
+
+void use(hero@ h) {
+double increased_hp = h.hp + (h.max_hp * this.hp_percent_increase/100);
+double increased_mp = h.mp + (h.max_mp * this.mp_percent_increase/100);
+if (increased_hp > h.max_hp) {
+increased_hp = h.max_hp;
+}
+if (increased_mp > h.max_mp) {
+increased_mp = h.max_mp;
+}
+h.hp = increased_hp;
+h.mp = increased_mp;
+}
+}
+
+class one_modifier_item: Item {
+string modifier_type;
+double modifier_1;
+
+one_modifier_item(string name, string description, double modifier_1){
+super(name, description);
+if(string_contains(description, "Physical Attack", 1) != -1 ){
+this.modifier_type = "Physical Attack";
+} else if(string_contains(description, "Magical Attack", 1) != -1){
+this.modifier_type = "Magical Attack";
+} else if(string_contains(description, "Physical Defense", 1) != -1){
+this.modifier_type = "Physical Defense";
+} else if(string_contains(description, "Magical Defense", 1) != -1){
+this.modifier_type = "Magical Defense";
+} else if(string_contains(description, "Attack Speed", 1) != -1){
+this.modifier_type = "Attack Speed";
+} else if(string_contains(description, "Critical Chance", 1) != -1){
+this.modifier_type = "Critical Chance";
+} else if(string_contains(description, "Lifesteal", 1) != -1){
+this.modifier_type = "Lifesteal";
+} else if(string_contains(description, "Cooldown Reduction", 1) != -1){
+this.modifier_type = "Cooldown Reduction";
+} else if(string_contains(description, "HP Regeneration", 1) != -1){
+this.modifier_type = "HP Regeneration";
+} else if(string_contains(description, "MP Regeneration", 1) != -1){
+this.modifier_type = "MP Regeneration";
+} else if(string_contains(description, "Max MP", 1) != -1){
+this.modifier_type = "Max MP";
+} else if(string_contains(description, "Max HP", 1) != -1){
+this.modifier_type = "Max HP";
+} else if(string_contains(description, "Movement Speed", 1) != -1){
+this.modifier_type = "Movement Speed";
+} else if(name == "Recall"){
+this.modifier_type = "Recall";
+} 
+this.modifier_1 = modifier_1;
+}
+void use(hero@ h){
+if(this.modifier_type == "Physical Attack"){
+h.phy_atk = h.phy_atk + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "phy_atk", h.phy_atk);
+} else if(this.modifier_type == "Magical Attack"){
+h.mag_atk = h.mag_atk + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "mag_atk", h.mag_atk);
+} else if(this.modifier_type == "Physical Defense"){
+h.phy_def = h.phy_def + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "phy_def", h.phy_def);
+} else if(this.modifier_type == "Magical Defense"){
+h.mag_def = h.mag_def + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "mag_def", h.mag_def);
+} else if(this.modifier_type == "Attack Speed"){
+h.attack_speed = h.attack_speed + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "attack_speed", h.attack_speed);
+} else if(this.modifier_type == "Critical Chance"){
+h.critical_chance = h.critical_chance + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "critical_chance", h.critical_chance);
+} else if(this.modifier_type == "Lifesteal"){
+h.lifesteal = h.lifesteal + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "lifesteal", h.lifesteal);
+} else if(this.modifier_type == "Cooldown Reduction"){
+h.cd_reduction = h.cd_reduction + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "cd_reduction", h.cd_reduction);
+} else if(this.modifier_type == "HP Regeneration"){
+h.hp_regen = h.hp_regen + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "hp_regen", h.hp_regen);
+} else if(this.modifier_type == "MP Regeneration"){
+h.mp_regen = h.mp_regen + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "mp_regen", h.mp_regen);
+} else if(this.modifier_type == "Max MP"){
+h.max_mp = h.max_mp + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "max_mp", h.max_mp);
+} else if(this.modifier_type == "Max HP"){
+h.max_hp = h.max_hp + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "max_hp", h.max_hp);
+} else if(this.modifier_type == "Movement Speed"){
+h.walk_speed = h.walk_speed + this.modifier_1;
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "walk_speed", h.walk_speed);
+} else if(this.modifier_type == "Recall"){
+if(h.color == "blue"){
+h.set_location(map_x/2, 0);
+pool_item.play_stationary("move.ogg",false);
+send_reliable_msg(1, 0, "player", "update_location", h1.name, map_x/2, 0);
+p.update_listener_2d(h1.x, h1.y);
+} else if(h.color == "red"){
+h.set_location(map_x/2, map_y);
+pool_item.play_stationary("move.ogg",false);
+send_reliable_msg(1, 0, "player", "update_location", h1.name, map_x/2, map_y);
+p.update_listener_2d(h1.x, h1.y);
+}
+}
+}
+
+}
+
+class two_modifier_item: Item{
+string [] modifier_type(2);
+double [] modifier(2);
+string existing_modifier = "";
+
+two_modifier_item(string name, string description, double modifier_1, double modifier_2){
+super(name,description);
+for(int i=0;i<2;i++){
+if(string_contains(description, "Physical Attack", 1) != -1 and string_contains(this.existing_modifier, "pa", 1) == -1){
+this.modifier_type[i] = "Physical Attack";
+this.existing_modifier += "pa ";
+} else if(string_contains(description, "Magical Attack", 1) != -1 and string_contains(this.existing_modifier, "ma", 1) == -1){
+this.modifier_type[i] = "Magical Attack";
+this.existing_modifier += "ma ";
+} else if(string_contains(description, "Physical Defense", 1) != -1 and string_contains(this.existing_modifier, "pd", 1) == -1){
+this.modifier_type[i] = "Physical Defense";
+this.existing_modifier += "pd ";
+} else if(string_contains(description, "Magical Defense", 1) != -1 and string_contains(this.existing_modifier, "md", 1) == -1){
+this.modifier_type[i] = "Magical Defense";
+this.existing_modifier += "md ";
+} else if(string_contains(description, "Attack Speed", 1) != -1 and string_contains(this.existing_modifier, "as", 1) == -1){
+this.modifier_type[i] = "Attack Speed";
+this.existing_modifier += "as ";
+} else if(string_contains(description, "Critical Chance", 1) != -1 and string_contains(this.existing_modifier, "cc", 1) == -1){
+this.modifier_type[i] = "Critical Chance";
+this.existing_modifier += "cc ";
+} else if(string_contains(description, "Lifesteal", 1) != -1 and string_contains(this.existing_modifier, "ls", 1) == -1){
+this.modifier_type[i] = "Lifesteal";
+this.existing_modifier += "ls ";
+} else if(string_contains(description, "Cooldown Reduction", 1) != -1 and string_contains(this.existing_modifier, "cr", 1) == -1){
+this.modifier_type[i] = "Cooldown Reduction";
+this.existing_modifier += "cr ";
+} else if(string_contains(description, "HP Regeneration", 1) != -1 and string_contains(this.existing_modifier, "hpr", 1) == -1){
+this.modifier_type[i] = "HP Regeneration";
+this.existing_modifier += "hpr ";
+} else if(string_contains(description, "MP Regeneration", 1) != -1 and string_contains(this.existing_modifier, "mpr", 1) == -1){
+this.modifier_type[i] = "MP Regeneration";
+this.existing_modifier += "mpr ";
+} else if(string_contains(description, "Max MP", 1) != -1 and string_contains(this.existing_modifier, "mmp", 1) == -1){
+this.modifier_type[i] = "Max MP";
+this.existing_modifier += "mmp ";
+} else if(string_contains(description, "Max HP", 1) != -1 and string_contains(this.existing_modifier, "mhp", 1) == -1){
+this.modifier_type[i] = "Max HP";
+this.existing_modifier += "mhp ";
+} else if(string_contains(description, "Movement Speed", 1) != -1 and string_contains(this.existing_modifier, "ms", 1) == -1){
+this.modifier_type[i] = "Movement Speed";
+this.existing_modifier += "ms ";
+}
+if(i == 0){
+this.modifier[i] = modifier_1;
+} else if(i == 1){
+this.modifier[i] = modifier_2;
+}
+}
+}
+
+void use(hero@ h){
+for(int i=0;i<2;i++){
+if(this.modifier_type[i] == "Physical Attack"){
+h.phy_atk = h.phy_atk + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "phy_atk", h.phy_atk);
+} else if(this.modifier_type[i] == "Magical Attack"){
+h.mag_atk = h.mag_atk + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "mag_atk", h.mag_atk);
+} else if(this.modifier_type[i] == "Physical Defense"){
+h.phy_def = h.phy_def + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "phy_def", h.phy_def);
+} else if(this.modifier_type[i] == "Magical Defense"){
+h.mag_def = h.mag_def + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "mag_def", h.mag_def);
+} else if(this.modifier_type[i] == "Attack Speed"){
+h.attack_speed = h.attack_speed + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "attack_speed", h.attack_speed);
+} else if(this.modifier_type[i] == "Critical Chance"){
+h.critical_chance = h.critical_chance + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "critical_chance", h.critical_chance);
+} else if(this.modifier_type[i] == "Lifesteal"){
+h.lifesteal = h.lifesteal + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "lifesteal", h.lifesteal);
+} else if(this.modifier_type[i] == "Cooldown Reduction"){
+h.cd_reduction = h.cd_reduction + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "cd_reduction", h.cd_reduction);
+} else if(this.modifier_type[i] == "HP Regeneration"){
+h.hp_regen = h.hp_regen + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "hp_regen", h.hp_regen);
+} else if(this.modifier_type[i] == "MP Regeneration"){
+h.mp_regen = h.mp_regen + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "mp_regen", h.mp_regen);
+} else if(this.modifier_type[i] == "Max MP"){
+h.max_mp = h.max_mp + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "max_mp", h.max_mp);
+} else if(this.modifier_type[i] == "Max HP"){
+h.max_hp = h.max_hp + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "max_hp", h.max_hp);
+} else if(this.modifier_type[i] == "Movement Speed"){
+h.walk_speed = h.walk_speed + this.modifier[i];
+send_reliable_msg(1, 0, "player", "update_player", h1.name, "update_status", "walk_speed", h.walk_speed);
+}
+
+}
+}
+
+}
+
+Item@ item_factory(string name, string description) {
+/* this function returns the correct object of item based on the name given
+This is call factory design pattern in software engineering
+*/
+/*
+else if (name == "") {
+return Item(name, description);
+} 
+*/
+if (name == "potion") {
+return Potion(name, description, 50, 0);
+} else if (name == "hi-potion") {
+return Potion(name, description, 100, 0);
+} else if (name == "ether") {
+return Potion(name, description, 0, 50);
+} else if (name == "turbo-ether") {
+return Potion(name, description, 0, 100);
+} else if (name == "Gladius") {
+return one_modifier_item(name, description, 5);
+} else if (name == "Dirk") {
+return one_modifier_item(name, description, 10);
+} else if (name == "Bracers") {
+return one_modifier_item(name, description, 5);
+} else if (name == "Kusarigama") {
+return one_modifier_item(name, description, 15);
+} else if (name == "Boots") {
+return one_modifier_item(name, description, 2);
+} else if (name == "Ancient Tome") {
+return one_modifier_item(name, description, 20);
+} else if (name == "Guardian Bell") {
+return one_modifier_item(name, description, 20);
+} else if (name == "Talisman of Power") {
+return one_modifier_item(name, description, 10);
+} else if (name == "Ring of Health") {
+return one_modifier_item(name, description, 5);
+} else if (name == "Dragon's blood") {
+return one_modifier_item(name, description, 10);
+} else if (name == "Phoenix Tear") {
+return one_modifier_item(name, description, 300);
+} else if (name == "Wooden Shield") {
+return one_modifier_item(name, description, 40);
+} else if (name == "Leather Cloak") {
+return one_modifier_item(name, description, 40);
+} else if (name == "Recall") {
+return one_modifier_item(name, description, -1);
+} else if (name == "Searing Lance") {
+return two_modifier_item(name, description, 5, 5);
+} else if (name == "Charm Gem") {
+return two_modifier_item(name, description, 25, 5);
+} else {
+return Item(name, description);
+} 
+
+} 

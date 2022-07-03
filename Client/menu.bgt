@@ -1,0 +1,255 @@
+#include "dialog.bgt"
+#include "room.bgt"
+
+bool room_menu_active;
+
+void mainmenu()
+{
+dynamic_menu_pro menu;
+menu.reset(false);
+menu.wrap=false;
+menu.allow_escape=true;
+menu.enable_home_and_end=true;
+menu.enable_up_and_down=true;
+menu.enable_first_letter_navigation=true;
+menu.enable_up_and_down=true;
+menu.click_sound="menu_move.ogg";
+menu.enter_sound="menu_confirm.ogg";
+menu.edge_sound="menu_edge.ogg";
+menu.repeat_items_at_edges=true;
+menu.add_item_tts("Login","login");
+menu.add_item_tts("TestSpeaker","speaker");
+menu.add_item_tts("visit website","web");
+menu.add_item_tts("Exit","exit");
+menu.add_music("Music1.ogg");
+while (true){
+int mres=menu.run("Please choose an option with your up and down arrows key, then press enter to activate it.",true);
+if(menu.get_item_name(mres)=="exit" or mres==0)
+{
+menu.stop_music();
+text_speak_interrupt("thanks for playing");
+f.close();
+wait(500);
+exit();
+}
+if (menu.get_item_name(mres)=="login")
+{
+menu.stop_music();
+f.open("localLog.log", "r");
+networkMessage = f.read();
+if (log){
+f.open("localLog.log", "w");
+}
+f.write(networkMessage);
+start();
+}
+if (menu.get_item_name(mres)=="speaker")
+{
+menu.stop_music();
+speaker_menu();
+}
+if (menu.get_item_name(mres)=="web")
+{
+menu.stop_music();
+wait(5);
+text_speak("please wait...");
+run("C:\\Windows\\System32\\explorer.exe","https://wightfall.com/",false,false);
+mainmenu();
+}
+}
+}
+
+void room_menu(){
+room_menu_active = true;
+dynamic_menu_pro menu;
+menu.reset(true);
+menu.wrap=false;
+menu.allow_escape=true;
+menu.enable_home_and_end=true;
+menu.enable_first_letter_navigation=true;
+menu.enable_up_and_down=true;
+menu.click_sound="menu_move.ogg";
+menu.enter_sound="menu_confirm.ogg";
+menu.edge_sound="menu_edge.ogg";
+menu.repeat_items_at_edges=true;
+menu.add_item_tts("Create room","create");
+menu.add_item_tts("Join room","join");
+menu.add_item_tts("Go back","gb");
+menu.add_music("Music3.ogg");
+while (room_menu_active){
+int mres=menu.run("Please choose an option with your up and down arrows key, then press enter to activate it.",true);
+if(menu.get_item_name(mres)=="gb" or mres==0){
+menu.stop_music();
+send_reliable_msg(server_peer_id, 0, "player", "delete", host_name);
+text_speak_interrupt("Disconnect");
+wait(500);
+break;
+}
+if (menu.get_item_name(mres)=="create"){
+bool next = ask_create_room();
+if (next) {
+room_host_waiting();
+}
+}
+if (menu.get_item_name(mres)=="join"){
+join_room_menu();
+}
+}
+}
+
+void join_room_menu() {
+timer t;
+text_speak_interrupt("fetching room list");
+send_reliable_msg(server_peer_id, 0, "room", "list_room");
+bool list_active = false;
+bool is_waiting = false;
+string[][] room_list;
+while(t.elapsed <= 10000 and !list_active) {
+event = host.request();
+if (event.type == event_receive) {
+string[] data = string_split(event.message, "\t", true);
+if (data[0] == "room" and data[1] == "room_list_result") {
+room_list = deserialize_2d_array(data[2]);
+list_active = true;
+}
+}
+}
+if (t.elapsed > 10000) {
+text_speak_interrupt("Server took to long to response; please try again later");
+}
+//construct the menu
+dynamic_menu_pro menu;
+menu.reset(true);
+menu.wrap=false;
+menu.allow_escape=true;
+menu.enable_home_and_end=true;
+menu.enable_first_letter_navigation=true;
+menu.enable_up_and_down=true;
+menu.click_sound="menu_move.ogg";
+menu.enter_sound="menu_confirm.ogg";
+menu.edge_sound="menu_edge.ogg";
+menu.repeat_items_at_edges=true;
+for(int i=0; i < room_list.length(); i++) {
+if (room_list[i].length() != 3) {
+continue;
+}
+string menu_item = room_list[i][0];
+if (room_list[i][1] == "1") {
+menu_item += ", protected";
+}
+if (room_list[i][2] == "1") {
+menu_item += ", game running";
+}
+menu.add_item_tts(menu_item, room_list[i][0]);
+}
+menu.add_item_tts("go back","gb");
+while(true) {
+int result = menu.run("Please choose an option with your up and down arrows key, then press enter to activate it.",true);
+if (result == 0 || result == menu.get_item_count()) {
+break;
+} else {
+if (room_list[result-1][2] == "1") {
+text_speak_interrupt("Cannot join an already running game");
+wait(2000);
+continue;
+}
+string room_name = room_list[result-1][0];
+string password = "\0";
+if (room_list[result-1][1] == "1") {
+bool is_pass = ask_password(password);
+if (!is_pass) {
+continue;
+}
+}
+send_reliable_msg(server_peer_id, 0, "room", "join_room", host_name, room_name, password);
+is_waiting = true;
+break;
+}
+}
+if (is_waiting) {
+room_guest_waiting();
+}
+}
+
+void speaker_menu()
+{
+dynamic_menu_pro menu;
+menu.reset(true);
+menu.wrap=false;
+menu.allow_escape=true;
+menu.enable_home_and_end=true;
+menu.enable_first_letter_navigation=true;
+menu.enable_up_and_down=true;
+menu.click_sound="menu_move.ogg";
+menu.enter_sound="menu_confirm.ogg";
+menu.edge_sound="menu_edge.ogg";
+menu.repeat_items_at_edges=true;
+menu.add_item_tts("by default","default");
+menu.add_item_tts("by text","text");
+menu.add_item_tts("goback","gb");
+menu.add_music("Music2.ogg");
+while (true){
+int mres=menu.run("select your speaker mode with up and dow arrow keys, hit enter to activate it.",true);
+if(menu.get_item_name(mres)=="gb" or mres==0)
+{
+menu.stop_music();
+mainmenu();
+}
+if (menu.get_item_name(mres)=="default")
+{
+menu.stop_music();
+test_speaker();
+}
+if (menu.get_item_name(mres)=="text")
+{
+menu.stop_music();
+text_menu();
+}
+}
+}
+
+void test_speaker()
+{
+dlgplay("speakertest.ogg",true,20);
+while (dlgaudio.playing)
+{
+if(key_pressed(KEY_RETURN) or key_pressed(KEY_SPACE) or key_pressed(KEY_ESCAPE))
+{
+dlgaudio.stop();
+return;
+}
+}
+return;
+}
+
+void text_menu()
+{
+dynamic_menu_pro menu;
+menu.reset(true);
+menu.enable_first_letter_navigation=true;
+menu.click_sound="menu_move.ogg";
+menu.enter_sound="menu_confirm.ogg";
+menu.enable_side_scrolling=true;
+menu.enable_left_and_right=true;
+menu.allow_escape=true;
+menu.wrap=false;
+menu.enable_home_and_end=true;
+menu.edge_sound="menu_edge.ogg";
+menu.add_item_tts("left","left");
+menu.add_item_tts("center","center");
+menu.add_item_tts("right","right");
+menu.repeat_items_at_edges=true;
+int mres=menu.run("test your speaker position by pressing left and right arrow keys, hit escape to go back.",true);
+if (menu.get_item_name(mres)=="left")
+{
+speaker_menu();
+}
+if (menu.get_item_name(mres)=="center")
+{
+speaker_menu();
+}
+if (menu.get_item_name(mres)=="right")
+{
+speaker_menu();
+}
+}

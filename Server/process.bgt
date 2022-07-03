@@ -1,0 +1,15 @@
+#include "process_room.bgt"
+#include "process_player.bgt"
+
+void process(network_event event, string[] data) {
+assert(data.length >= 2);
+log.add_entry("Receive:" + event.peer_id + "|" + event.channel + "|"+ event.message);
+string topic = data[0];
+if (topic == "room") {
+process_room(event.peer_id, data);
+} else if (topic == "player"){
+process_player(event, data);
+} else {
+assert(false);
+}
+}

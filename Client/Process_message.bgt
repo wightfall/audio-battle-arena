@@ -1,0 +1,18 @@
+#include "process_error.bgt"
+#include "process_player.bgt"
+#include "process_room.bgt"
+
+void process_message(network_event event, string[] data){
+assert(data.length() >= 2);
+string topic = data[0];
+if (topic == "player") {
+process_player(event, data);
+} else if (topic == "room") {
+process_room(event, data);
+} else if (topic == "error") {
+process_error(event, data);
+} else {
+assert(false);
+}
+}
+

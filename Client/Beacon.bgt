@@ -1,0 +1,15 @@
+sound_pool pool_beacon;
+sound Beacon_sound;
+bool beacon_check = false;
+timer beacon_timer;
+void beacon(){
+if (beacon_check and beacon_timer.elapsed >=500){
+if (h.length() > 0){
+for (int i=0;i<h.length;i++){
+//position_sound_2d(Beacon_sound[i], 0, 0, ((h[i].x-h1.x)*sine(pi*h1.direction/4))-((h[i].y-h1.y)*cosine(pi*h1.direction/4)), ((h[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((h[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+pool_beacon.play_2d("Beacon.ogg",h1.x,h1.y,h[i].x,h[i].y,false);
+}
+}
+beacon_timer.restart();
+}
+}

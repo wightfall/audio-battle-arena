@@ -1,0 +1,283 @@
+#include "dialog.bgt"
+#include "creep_action.bgt"
+#include "Beacon.bgt"
+#include "Change_team.bgt"
+#include "Process_message.bgt"
+#include "Key_walk.bgt"
+#include "Key_Attack.bgt"
+#include "Store.bgt"
+#include "inventory.bgt"
+#include "VoiceProm.bgt"
+#include "tower_destroy.bgt"
+#include "findPlayer.bgt"
+#include "key_status.bgt"
+#include "tower_attack.bgt"
+#include "util.bgt"
+#include "status_menu.bgt"
+#include "current_text.bgt"
+#include "check_where_player.bgt"
+#include "sound_play_2d.bgt"
+int menu_position = 1;
+network host;
+network_event event;
+int server_peer_id;
+string host_name;
+bool in_session = false;
+
+
+sound_pool pool_death;
+sound_pool pool_end;
+sound_pool pool_history;
+sound_pool pool_zone;
+sound_pool pool_g_zone;
+
+void start(){
+bool is_connected = false;
+string address = "localhost";
+int port = 10000;
+string name;
+
+if(host.setup_client(3, 1)==false)
+{
+alert("Error", "The client could not be set up.");
+exit();
+}
+
+wait(500);
+text_speak("Connecting...");
+wait(2000);
+server_peer_id = host.connect(address, port);
+while (true){
+event=host.request();
+if(event.type==event_connect){
+text_speak("connected");
+wait(500);
+bool is_pass = ask_name(name);
+if (!is_pass) {
+break;
+}
+} else if (event.type == event_receive) {
+f.write("\nReceive: "+event.message);
+string[] data = string_split(event.message, "\t", true);
+if (data[0] == "player" and data[1] == "login_success") {
+is_connected = true;
+h1.name = name;
+host_name = name;
+break;
+} else if (data[0] == "error" and data[1] == "not_authorize") {
+text_speak_interrupt("Cannot login using the specified name; This can be caused by an existing user with the same name has already logged in to the system or your name has been banned by the administrator");
+is_connected = false;
+wait(4000);
+break;
+}
+}
+if (key_pressed(KEY_ESCAPE)){
+break;
+}
+}
+// after connected
+if (is_connected) {
+room_menu();
+if (in_session) {
+main_loop();
+}
+}
+is_connected = false;
+if (host.active) {
+host.disconnect_peer(server_peer_id);
+host.destroy();
+}
+}
+
+void main_loop() {
+creep_respawn.restart();
+while(true){
+event=host.request();
+if(event.type==event_disconnect and event.peer_id == 1){
+alert("Error", "The server is shutdown.");
+}
+if(event.type==event_receive){
+f.write("\nReceive: "+event.message);
+string [] s = string_split(event.message, "\t", true);
+// process the message
+process_message(event, s);
+}
+key_walk();
+if((!key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT)) and key_down(KEY_COMMA) and historyKeyTimer.elapsed >= historyKeyRepeat){
+pool_history.play_stationary("history_move.ogg",false);
+if (historyIndex > 0){
+historyIndex--;
+}
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+historyKeyTimer.restart();
+} else if ((!key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT)) and key_down(KEY_PERIOD) and historyKeyTimer.elapsed >= historyKeyRepeat){
+pool_history.play_stationary("history_move.ogg",false);
+if (historyIndex < gameHistory.length-1){
+historyIndex++;
+}
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+historyKeyTimer.restart();
+} else if((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_COMMA)){
+historyIndex = 0;
+pool_history.play_stationary("history_move.ogg",false);
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+} else if ((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_PERIOD)){
+historyIndex = gameHistory.length-1;
+pool_history.play_stationary("history_move.ogg",false);
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+} 
+if (h1.current_zone != current_text(h1.x, h1.y))
+{
+h1.current_zone = current_text(h1.x, h1.y);
+if (h1.current_zone == "Blue Zone")
+{
+pool_zone.play_stationary("b_zone_speak.ogg",false);
+}
+else if (h1.current_zone == "Red Zone")
+{
+pool_zone.play_stationary("r_zone_speak.ogg",false);
+}
+else if (h1.current_zone == "Grass Blue Zone")
+{
+pool_g_zone.play_stationary("g_b_zone_speak.ogg",false);
+}
+else if (h1.current_zone == "Grass Red Zone")
+{
+pool_g_zone.play_stationary("g_r_zone_speak.ogg",false);
+}
+
+}
+key_attack();
+voiceProm();
+store();
+key_status();
+inventory();
+tower_attack();
+player_status();
+monster_action();
+if(creep_respawn.elapsed >= 30000){
+pool_creep.play_stationary("creep_spawn.ogg",false);
+creep_respawn.restart();
+spawn_creep();
+}
+creep_action();
+if (key_pressed(KEY_D)){
+if (!beacon_check){
+beacon_check = true;
+text_speak_interrupt("Beacon on");
+}
+else{
+beacon_check = false;
+for (int i=0;i<Beacon_sound.length;i++){
+pool_beacon.destroy_all();
+//Beacon_sound[i].stop();
+}
+text_speak_interrupt("Beacon off");
+}
+}
+beacon();
+if(h1.hp<=0){
+if (h1.color == "blue"){
+h1.set_location(map_x/2, 0);
+h1.direction = 2;
+}
+else if (h1.color == "red"){
+h1.set_location(map_x/2, map_y);
+h1.direction = 6;
+}
+pool_death.play_stationary("death"+random(1,6)+".ogg",false);
+p.update_listener_2d(h1.x, h1.y);
+die = true;
+dieTimer.restart();
+h1.hp = h1.max_hp;
+h1.mp = h1.max_mp;
+send_unreliable_msg(1, 1, "player", "update_location", h1.name, h1.x, h1.y);
+text_speak_interrupt("You have been killed.");
+}
+if (dieTimer.elapsed >= dieTime and die){
+die = false;
+dieTime += 1000;
+}
+if (h1.color == "blue" and h1.x == map_x/2 and h1.y == 0){
+if (h1.hp != h1.max_hp){
+h1.hp = h1.max_hp;
+text_speak_interrupt("Full help.");
+}
+}
+else if (h1.color == "red" and h1.x == map_x/2 and h1.y == map_y){
+if (h1.hp != h1.max_hp){
+h1.hp = h1.max_hp;
+text_speak_interrupt("Full help.");
+}
+}
+for (int i=0;i<tw.length;i++){
+if (tw[i].hp <= 0 and tw[i].type == "main" and starting)
+{
+send_reliable_msg(1, 1, "player", "win", tw[i].color);
+wait(1000);
+if (h1.color != tw[i].color){
+pool_end.play_stationary("victory.ogg",false);
+wait(7000);
+dlg("Victory, press enter or escape to continue.");
+}
+else if (h1.color == tw[i].color){
+pool_end.play_stationary("lost.ogg",false);
+wait(5000);
+dlg("Defeat, press enter or escape to continue.");
+}
+wait(1000);
+in_session = false;
+starting = false;
+f.close();
+}
+}
+if (key_down(KEY_LMENU) and key_pressed(KEY_F4) || !in_session){
+in_session = false;
+send_reliable_msg(server_peer_id, 0, "room", "leave_room", h1.name);
+send_reliable_msg(server_peer_id, 0, "player", "delete", h1.name);
+text_speak("exiting");
+pool_end.play_stationary("leave_room.ogg",false);
+wait(700);
+host.destroy();
+for (int i=0;i<tw.length;i++){
+TowerAttack[i].stop();
+}
+p.destroy_all();
+pool_hero.destroy_all();
+pool_attack.destroy_all();
+pool_r.destroy_all();
+pool_store.destroy_all();
+pool_tower.destroy_all();
+pool_prom.destroy_all();
+pool_walk.destroy_all();
+pool_beacon.destroy_all();
+pool_item.destroy_all();
+pool_monster.destroy_all();
+spool.destroy_all();
+pool_rotate.destroy_all();
+pool_creep.destroy_all();
+pool_death.destroy_all();
+pool_end.destroy_all();
+pool_history.destroy_all();
+starting = false;
+f.close();
+mainmenu();
+}
+}
+}

@@ -1,0 +1,117 @@
+#include "item.bgt"
+#include "m_pro.bgt"
+
+class Inventory {
+InventoryItem@[] inventory();
+dictionary index_mapper;
+hero@ current_hero; //The owner of the inventory
+dynamic_menu_pro m;
+
+
+Inventory(hero@ hero) {
+@this.current_hero = hero;
+this.m.wrap = false;
+this.m.allow_escape = true;
+this.m.enable_home_and_end = true;
+this.m.enable_first_letter_navigation=true;
+this.m.enable_up_and_down=true;
+this.m.click_sound="menu_move.ogg";
+this.m.edge_sound="menu_edge.ogg";
+this.m.open_sound="menu_open.ogg";
+this.m.repeat_items_at_edges=true;
+}
+
+//the followings are public method
+void add(Item@ item, int quantity) {
+string name = item.name;
+int idx = inventory.length;
+if (index_mapper.exists(name)) {
+//we already have this kind of item in our inventory; just increment the quantity
+index_mapper.get(name, idx);
+inventory[idx].quantity += quantity;
+} else {
+//This is a new kind of item in our inventory; just insert it and note the index in the mapper
+string name = item.name;
+InventoryItem int_item(item, quantity);
+inventory.insert_last(int_item);
+index_mapper.set(name, idx);
+}
+}
+
+void show_inventory() {
+this.m.reset(false);
+string descriptions = "";
+for(uint i=0; i < this.inventory.length; i++) {
+descriptions += this.inventory[i].item.description + "\t";
+}
+menu_position = 1;
+this.m.set_callback(inventory_menu_callback, descriptions);
+for (uint i=0; i < this.inventory.length; i++) {
+string name = this.inventory[i].item.name;
+int quantity = this.inventory[i].quantity;
+this.m.add_item_tts(name + "," + quantity, name);
+}
+this.m.add_item_tts("Go back", "go_back");
+int result = this.m.run("Inventory menu",  true);
+result -= 1;
+if (this.is_index_in_bound(result)) {
+spool.play_stationary("menu_confirm.ogg",false);
+this.use_item(result);
+} else {
+spool.play_stationary("menu_close.ogg",false);
+}
+}
+
+//the followings are private method
+void use_item(int idx) {
+this.inventory[idx].item.use(current_hero);
+this.inventory[idx].quantity -= 1;
+this.check_quantity(idx);
+}
+
+bool is_index_in_bound(int idx) {
+if (idx < 0 || idx >= inventory.length) {
+return false;
+}
+return true;
+}
+
+void recreate_mapper() {
+index_mapper.delete_all();
+for(uint i=0; i < inventory.length; i++) {
+string name = inventory[i].item.name;
+index_mapper.set(name, i);
+}
+}
+
+void check_quantity(int idx) {
+assert(this.is_index_in_bound(idx));
+if (inventory[idx].quantity == 0) {
+//We used up all the items of this particular type; remove it from the inventory
+inventory.remove_at(idx);
+this.recreate_mapper();
+}
+}
+}
+
+int inventory_menu_callback(dynamic_menu_pro@ m, string data)  {
+string[] descriptions = string_split(data, "\t", true);
+int current_position = m.get_position();
+int size = m.get_item_count();
+menu_position = current_position;
+if (key_pressed(KEY_SPACE) and current_position != 0) {
+if (current_position == size) {
+text_speak_interrupt("Go back to the game");
+} else {
+int idx = current_position - 1;
+text_speak_interrupt(descriptions[idx]);
+}
+}
+return 0;
+}
+
+void inventory() {
+if (key_pressed(KEY_I)) {
+h1.show_inventory();
+}
+}

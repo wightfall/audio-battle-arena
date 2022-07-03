@@ -1,0 +1,26 @@
+#include "room_manager.bgt"
+
+RoomManager room_mgr;
+
+void process_room(int peer_id, string[] data) {
+string subtopic = data[1];
+if (subtopic == "create_room") {
+room_mgr.create_room(peer_id, data);
+} else if (subtopic == "join_room") {
+room_mgr.join_room(peer_id, data);
+} else if (subtopic == "leave_room") {
+room_mgr.leave_room(peer_id, data);
+} else if (subtopic == "switch_side") {
+room_mgr.switch_side(peer_id, data);
+} else if (subtopic == "list_member") {
+room_mgr.list_member(peer_id, data);
+} else if (subtopic == "list_room") {
+room_mgr.list_room(peer_id, data);
+} else if (subtopic == "start"){
+room_mgr.start(peer_id, data);
+} else if(subtopic == "chat"){
+host.send_reliable(0, data[0]+"\t"+data[1]+"\t"+data[2]+"\t"+data[3], 0);
+} else {
+assert(false);
+}
+}

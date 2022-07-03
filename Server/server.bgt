@@ -1,0 +1,28 @@
+#include "process.bgt"
+#include "logger.bgt"
+
+network host;
+logger log;
+
+
+void main(){
+show_game_window("Server");
+player_to_id.set("jane", -1);
+if(host.setup_server(10000, 3, 100)==false)
+{
+alert("Error", "The server could not be set up.");
+exit();
+}
+network_event event;
+while(!key_pressed(KEY_ESCAPE)){
+event = host.request();
+
+if (event.type == event_receive){
+string [] data = string_split(event.message, "\t", false);
+process(event, data);
+log.date_all_entries=true;
+log.date_format="<mm>/<dd>/<y> <HH>:<nn>:<ss>";
+}
+}
+log.write("test.log", true);
+}

@@ -1,0 +1,44 @@
+sound_pool pool_rotate;
+void key_rotate(){
+if ((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_LEFT) and !die){
+h1.direction++;
+speak_rotate();
+pool_rotate.play_stationary("rotate.ogg",false);
+p.update_listener_2d(h1.x, h1.y);
+}
+if ((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_RIGHT) and !die){
+h1.direction--;
+if (h1.direction < 0){
+h1.direction = h1.direction + 8;
+}
+speak_rotate();
+pool_rotate.play_stationary("rotate.ogg",false);
+p.update_listener_2d(h1.x, h1.y);
+}
+}
+void speak_rotate(){
+if (h1.direction%8 == 0){
+text_speak_interrupt("East");
+}
+else if (h1.direction%8 == 1){
+text_speak_interrupt("North East");
+}
+else if (h1.direction%8 == 2){
+text_speak_interrupt("North");
+}
+else if (h1.direction%8 == 3){
+text_speak_interrupt("North West");
+}
+else if (h1.direction%8 == 4){
+text_speak_interrupt("West");
+}
+else if (h1.direction%8 == 5){
+text_speak_interrupt("South West");
+}
+else if (h1.direction%8 == 6){
+text_speak_interrupt("South");
+}
+else if (h1.direction%8 == 7){
+text_speak_interrupt("South East");
+}
+}

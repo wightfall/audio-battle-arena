@@ -1,0 +1,22 @@
+#include "skill.bgt"
+
+class TestSkill1: Skill {
+
+TestSkill1(hero@ h) {
+super(h);
+}
+}
+
+class TestSkill2: Skill {
+
+TestSkill2(hero@ h) {
+super(h);
+}
+}
+
+class TestSkill3: Skill {
+
+TestSkill3(hero@ h) {
+super(h);
+}
+}

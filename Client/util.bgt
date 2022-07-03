@@ -1,0 +1,79 @@
+bool verify_name(string name) {
+if (string_len(name) <= 3) {
+text_speak_interrupt("Name must contain more than three characters, and consist of only lower case, upper case, number and underscore");
+return false;
+}
+string[] name_section = string_split(name, "_", true);
+for(int i=0; i < name_section.length(); i++) {
+if (!string_is_alphanumeric(name_section[i])) {
+text_speak_interrupt("Name must contain more than three characters, and consist of only lower case, upper case, number and underscore");
+return false;
+}
+}
+return true;
+}
+
+string serialize_array(string[] arr, string delimiter=",") {
+assert(arr.length() > 0);
+string result = arr[0];
+for(int i=1; i < arr.length(); i++) {
+result += (delimiter + arr[i]);
+}
+return result;
+}
+
+string[] deserialize_array(string text, string delimiter=",") {
+string[] result = string_split(text, delimiter, true);
+return result;
+}
+
+string serialize_2d_array(string[][] arr, string outer=",", string inner="|") {
+assert(arr.length() > 0);
+string result = "";
+for(int i=0; i < arr.length(); i++) {
+assert(arr[i].length() > 0);
+string s = serialize_array(arr[i], inner);
+if (i == 0) {
+result += s;
+} else {
+result += (outer + s);
+}
+}
+return result;
+}
+
+string[][] deserialize_2d_array(string text, string outer=",", string inner="|") {
+string[][] result;
+string[] outside = string_split(text, outer, true);
+result.resize(outside.length());
+for(int i=0; i < outside.length(); i++) {
+string[] inside = deserialize_array(outside[i], inner);
+result[i] = inside;
+}
+return result;
+}
+
+string construct_message(string[] segment) {
+string result = segment[0];
+for(int i=1; i < segment.length(); i++) {
+if (segment[i] == "") {
+break;
+}
+result += ("\t" + segment[i]);
+}
+return result;
+}
+
+void send_reliable_msg(int peer_id, int channel, string topic, string subtopic, string p1="", string p2="", string p3="", string p4="", string p5="", string p6="", string p7="", string p8="", string p9="", string p10="") {
+string[] body = {topic, subtopic, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10};
+string constructed_body = construct_message(body);
+f.write("\nSend_reliable: "+constructed_body);
+host.send_reliable(server_peer_id, constructed_body, channel);
+}
+
+void send_unreliable_msg(int peer_id, int channel, string topic, string subtopic, string p1="", string p2="", string p3="", string p4="", string p5="", string p6="", string p7="", string p8="", string p9="", string p10="") {
+string[] body = {topic, subtopic, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10};
+string constructed_body = construct_message(body);
+f.write("\nSend_unreliable: "+constructed_body);
+host.send_unreliable(server_peer_id, constructed_body, channel);
+}

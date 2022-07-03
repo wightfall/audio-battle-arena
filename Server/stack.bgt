@@ -1,0 +1,55 @@
+class IntStack {
+//private atribute; this should not be used directly
+int[] mData(1);
+int mSize=0;
+int mCap=1;
+
+IntStack() {
+}
+
+
+IntStack(int num) {
+for(int i=0; i < num; i++) {
+push(i);
+}
+}
+
+//public function
+bool is_empty() {
+if (mSize == 0) {
+return true;
+} else {
+return false;
+}
+}
+
+int size() {
+return mSize;
+}
+
+int top() {
+assert(mSize > 0);
+return mData[mSize-1];
+}
+
+int pop() {
+assert(mSize > 0);
+mSize--;
+return mData[mSize];
+}
+
+void push(int x) {
+ensure_capacity(mSize+1);
+mData[mSize] = x;
+mSize++;
+}
+
+//private method
+void ensure_capacity(int capacity) {
+if (capacity > mCap) {
+int new_cap = mCap*2;
+mData.resize(new_cap);
+mCap = new_cap;
+}
+}
+}

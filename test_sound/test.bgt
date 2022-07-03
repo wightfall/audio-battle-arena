@@ -1,0 +1,21 @@
+#include"sound_pool.bgt"
+sound_pool p;
+void main() {
+show_game_window ("Player");
+set_sound_storage("sound.dat");
+while(true)
+{
+{
+if (key_pressed(KEY_RETURN))
+{
+p.play_stationary("enter_room.ogg",false);
+}
+if(key_pressed(KEY_ESCAPE))
+{
+p.play_stationary("leave_room.ogg",false);
+wait(300);
+exit();
+}
+} 
+}
+}

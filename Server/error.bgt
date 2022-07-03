@@ -1,0 +1,29 @@
+#include "util.bgt"
+
+void room_exceed_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "room_exceed");
+}
+
+void game_in_progress_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "game_in_progress");
+}
+
+void room_password_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "room_password");
+}
+
+void join_fail_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "join_fail");
+}
+
+void not_allow_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "not_allow");
+}
+
+void not_authorize_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "not_authorize");
+}
+
+void room_close_error(int peer_id) {
+send_reliable_msg(peer_id, 2, "error", "room_close");
+}

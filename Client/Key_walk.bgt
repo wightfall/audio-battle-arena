@@ -1,0 +1,77 @@
+#include "Key_rotate.bgt"
+sound_pool pool_walk;
+void key_walk(){
+key_to_walk(key_down(KEY_UP), h1.direction);
+key_to_walk(key_down(KEY_LEFT), h1.direction + 2);
+key_to_walk(key_down(KEY_DOWN), h1.direction + 4);
+key_to_walk(key_down(KEY_RIGHT), h1.direction + 6);
+}
+bool play_walk = true;
+bool stop_walk = false;
+
+void key_to_walk(bool key, int direction){
+play_walk = true;
+if (key and !key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT) and walk_speed.elapsed >= 300-(h1.walk_speed*10) and !die){
+h1.x = h1.x + round(cosine(pi*direction/4), 0);
+h1.y = h1.y + round(sine(pi*direction/4), 0);
+if (h1.y < 0 or h1.y > map_y or h1.x < 0 or h1.x > map_x){
+h1.x = h1.x - round(cosine(pi*direction/4), 0);
+h1.y = h1.y - round(sine(pi*direction/4), 0);
+play_walk = false;
+walk_speed.restart();
+if (!stop_walk){
+pool_walk.play_stationary("Border.ogg",false);
+stop_walk = true;
+}
+}
+// Blue zone
+create_object(20, 22, 20, 40, direction);
+create_object(38, 40, 20, 40, direction);
+create_object(60, 62, 20, 40, direction);
+create_object(78, 80, 20, 40, direction);
+
+//Red zone
+create_object(20, 22, 160, 180, direction);
+create_object(38, 40, 160, 180, direction);
+create_object(60, 62, 160, 180, direction);
+create_object(78, 80, 160, 180, direction);
+
+if (h1.x >= map_x/5 and h1.x <= 2*map_x/5 and h1.y >= map_y/10 and h1.y <= map_y-map_y/10 and play_walk)
+{
+pool_walk.play_2d("Grass"+random(1, 9)+".ogg",h1.x, h1.y, h1.x, h1.y,false);
+send_unreliable_msg(1, 1, "player", "update_location", h1.name, h1.x, h1.y);
+walk_speed.restart();
+stop_walk = false;
+}
+else if (h1.x >= 3*map_x/5 and h1.x <= 4*map_x/5 and h1.y >= map_y/10 and h1.y <= map_y-map_y/10 and play_walk)
+{
+pool_walk.play_2d("Grass"+random(1, 9)+".ogg", h1.x, h1.y, h1.x, h1.y,false);
+send_unreliable_msg(1, 1, "player", "update_location", h1.name, h1.x, h1.y);
+walk_speed.restart();
+stop_walk = false;
+}
+else if (h1.x >= 0 and h1.x <= map_x and h1.y >= 0 and h1.y <= map_y and play_walk){
+pool_walk.play_2d("Concrete"+random(1, 5)+".ogg", h1.x, h1.y, h1.x, h1.y,false);
+send_unreliable_msg(1, 1, "player", "update_location", h1.name, h1.x, h1.y);
+walk_speed.restart();
+stop_walk = false;
+}
+
+p.update_listener_2d(h1.x, h1.y);
+p.update_listener_2d(h1.x, h1.y);
+}
+key_rotate();
+}
+
+void create_object(int x1, int x2, int y1, int y2, int direction){
+if (h1.x >= x1 and h1.x <= x2 and h1.y >= y1 and h1.y <= y2){
+h1.x = h1.x - round(cosine(pi*direction/4), 0);
+h1.y = h1.y - round(sine(pi*direction/4), 0);
+play_walk = false;
+walk_speed.restart();
+if (!stop_walk){
+pool_walk.play_stationary("Tree.ogg",false);
+stop_walk = true;
+}
+}
+}

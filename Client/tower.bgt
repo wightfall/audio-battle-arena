@@ -1,0 +1,35 @@
+class tower
+{
+string type;
+string color;
+int hp = 1000;
+int x,y;
+bool active = true;
+timer hit_speed;
+timer attack_speed;
+
+void tower_position (int x, int y)
+{
+this.x =x;
+this.y = y;
+}
+
+void decrease_tower_hp (int d)
+{
+if(hp > 0)
+{
+hp = hp-d;
+}
+}
+void show_help(int i){
+if (hp <=0){
+text_speak_interrupt(color+" "+type+" tower "+(i%6)+" has been destroyed.");
+}
+else if (type == "main"){
+text_speak_interrupt(color+" "+type+" tower hp = "+hp+" point.");
+}
+else if (type == "attack"){
+text_speak_interrupt(color+" "+type+" tower "+(i%6)+" hp = "+hp+" point.");
+}
+}
+}

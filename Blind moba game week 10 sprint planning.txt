@@ -1,0 +1,10 @@
+sprint10
+select hero menu
+tower attack ทีละตัว
+เวลาออกจาก room และสร้าง room ใหม่เจอ bug ทั้ง host  และ member
+แก้ creep bug
+Double kill trible kill function
+Skill information
+Play monster voice
+alert sound when stay in range of tower.
+Speak zone function

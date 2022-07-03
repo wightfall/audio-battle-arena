@@ -1,0 +1,54 @@
+// tell the name ofsounds
+
+sound [][] Concrete(5);
+sound [][] Grass(5);
+sound [] player_concrete(5);
+sound [] player_grass(5);
+sound [] Hit(5);
+sound [] Attack_creep(3);
+sound [] attack_monster(2);
+sound [] death(6);
+sound Wind2;
+sound Music3;
+sound [] Beacon_sound(10);
+sound creep_fist;
+sound creep_die;
+sound creep_walk;
+
+void load_sounds(){
+for (int i=0;i<Concrete.length;i++){
+Concrete[i].resize(11);
+for (int j=0;j<Concrete.length;j++){
+Concrete[i][j].load("sound/Steps/Concrete/Concrete"+(i+1)+".ogg");
+}
+}
+for (int i=0;i<Grass.length;i++){
+Grass[i].resize(11);
+for (int j=0;j<Grass.length;j++){
+Grass[i][j].load("sound/Steps/Grass/Grass"+(i+1)+".ogg");
+}
+}
+for (int i=0;i<player_concrete.length;i++){
+player_concrete[i].load("sound/Steps/Concrete/Concrete"+(i+1)+".ogg");
+player_grass[i].load("sound/Steps/Grass/Grass"+(i+1)+".ogg");
+}
+
+for (int i=0;i<Hit.length;i++){
+Hit[i].load("sound/Player/Hit"+(i+1)+".ogg");
+}
+for (int i=0;i<Attack_creep.length;i++){
+Attack_creep[i].load("sound/Player/Attack_creep"+(i+1)+".ogg");
+}
+for (int i=0;i<attack_monster.length;i++){
+attack_monster[i].load("sound/Player/attack_monster"+(i+1)+".ogg");
+}
+//for (int i=0;i<Beacon_sound.length;i++){
+//Beacon_sound[i].load("sound/Player/Beacon.ogg");
+//}
+Wind2.load("sound/Ambience/Wind2.ogg");
+Music3.load("Music3.ogg");
+creep_fist.load("sound/Creep/creep_fist.ogg");
+creep_die.load("sound/Creep/creep_die.ogg");
+creep_walk.load("sound/Creep/creep_walk.ogg");
+
+}

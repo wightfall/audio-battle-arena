@@ -1,0 +1,178 @@
+sound_pool pool_dlg;
+bool ask_password(string &out password) {
+password = "";
+bool outer_loop = true;
+bool is_pass = false;
+audio_form form;
+if(screen_reader_is_running(4)){
+form.set_output_mode(NVDA);
+} else {
+form.set_output_mode(0);
+}
+form.create_window("Room password", false, false);
+int password_edit_box =form.create_input_box("&Enter the password of the room: ", "", "*", 30);
+int ok_btn =form.create_button("&OK", true, false);
+int cancel_btn =form.create_button("&Cancel", false, true);
+while(outer_loop){
+form.focus(password_edit_box);
+while (true) {
+form.monitor();
+wait(5);
+if (form.is_pressed(ok_btn)) {
+password = form.get_text(password_edit_box);
+if (string_len(password) > 0) {
+is_pass = true;
+outer_loop = false;
+} else {
+password = "";
+}
+break;
+} else if (form.is_pressed(cancel_btn)) {
+password = "";
+outer_loop = false;
+break;
+}
+}
+}
+if (is_pass) {
+return true;
+} else {
+return false;
+}
+}
+
+bool ask_name(string &out name) {
+name = "";
+bool outer_loop = true;
+bool is_pass = false;
+audio_form form;
+if(screen_reader_is_running(4)){
+form.set_output_mode(NVDA);
+} else {
+form.set_output_mode(0);
+}
+form.create_window(game_name+" version"+game_version, true, false);
+int name_edit_box =form.create_input_box("&Enter your name: ", "", "", 30);
+int ok_btn =form.create_button("&OK", true, false);
+int cancel_btn =form.create_button("&Cancel", false, true);
+while(outer_loop){
+form.focus(name_edit_box);
+while (true) {
+form.monitor();
+wait(5);
+if (form.is_pressed(ok_btn)) {
+name = form.get_text(name_edit_box);
+if (verify_name(name)) {
+is_pass = true;
+outer_loop = false;
+} else {
+name = "";
+}
+break;
+} else if (form.is_pressed(cancel_btn)) {
+name = "";
+outer_loop = false;
+break;
+}
+}
+}
+if (is_pass) {
+send_reliable_msg(1, 0, "player", "player_login", name);
+return true;
+} else {
+return false;
+}
+}
+
+bool ask_create_room() {
+string room_name = "";
+string password = "";
+bool outer_loop = true;
+bool is_pass = false;
+audio_form form;
+if(screen_reader_is_running(4)){
+form.set_output_mode(NVDA);
+} else {
+form.set_output_mode(0);
+}
+form.create_window("Create room", false, false);
+int name_edit_box =form.create_input_box("&Enter a name of the room: ", "", "", 30);
+int use_password_checkbox = form.create_checkbox("set password", false, false);
+int password_edit_box =form.create_input_box("&Enter room password: ", "", "*", 30);
+int ok_btn =form.create_button("&OK", true, false);
+int cancel_btn =form.create_button("&Cancel", false, true);
+while(outer_loop){
+form.focus(name_edit_box);
+while (true) {
+form.monitor();
+wait(5);
+if (form.is_pressed(ok_btn)) {
+if (form.is_checked(use_password_checkbox)) {
+password = form.get_text(password_edit_box);
+if (string_len(password) < 4) {
+text_speak_interrupt("Password cannot be less than four characters");
+continue;
+}
+} else {
+password = "\0";
+}
+room_name = form.get_text(name_edit_box);
+if (verify_name(room_name)) {
+is_pass = true;
+outer_loop = false;
+} else {
+room_name = "";
+}
+break;
+} else if (form.is_pressed(cancel_btn)) {
+room_name = "";
+outer_loop = false;
+break;
+}
+}
+}
+if (is_pass) {
+send_reliable_msg(1, 0, "room", "create_room", host_name, room_name, password);
+return true;
+} else {
+return false;
+}
+}
+
+string chatBox(network_event event){
+string message = "";
+audio_form form;
+if(screen_reader_is_running(4)){
+form.set_output_mode(NVDA);
+} else {
+form.set_output_mode(0);
+}
+form.create_window("Chat room", false, false);
+int name_edit_box =form.create_input_box("Enter your message: ", "", "", 1000);
+int ok_btn =form.create_button("&OK", true, false);
+int cancel_btn =form.create_button("&Cancel", false, true);
+form.focus(name_edit_box);
+while (true) {
+form.monitor();
+event = host.request();
+if (event.type == event_receive){
+f.write("\nReceive: "+event.message);
+string[] data = string_split(event.message, "\t", true);
+if (data[0] == "room" and data[1] == "start_prepare"){
+handle_start_prepare(data);
+pool_dlg.play_stationary("start_room.ogg",false);
+message = "";
+break;
+}
+}
+if (form.is_pressed(ok_btn)) {
+message = form.get_text(name_edit_box);
+break;
+}
+else if (form.is_pressed(cancel_btn)) {
+message = "";
+break;
+}
+}
+return message;
+}

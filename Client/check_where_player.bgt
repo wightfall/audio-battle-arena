@@ -1,0 +1,25 @@
+void check_where_player(){
+int count = 0;
+for (int i=0;i<h.length;i++){
+if (absolute(h[i].x-h1.x)+absolute(h[i].y-h1.y) <= 20){
+string msg;
+count++;
+if (h1.y < h[i].y){
+msg += "North";
+}
+else if (h1.y>h[i].y){
+msg += "South";
+}
+if (h1.x<h[i].x){
+msg += "East";
+}
+else if (h1.x>h[i].x){
+msg += "West";
+}
+text_speak_interrupt(h[i].name+": Go "+msg+" "+(absolute(h1.x-h[i].x)+absolute(h1.y-h[i].y))+"tile.");
+}
+}
+if (count == 0){
+text_speak_interrupt("No one else is here.");
+}
+}

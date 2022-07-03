@@ -1,0 +1,12 @@
+class Monster{
+int hp = 100;
+int phy_atk = 5;
+int x, y;
+bool active = true;
+timer recall;
+timer hitTimer;
+void set_position(int x, int y){
+this.x = x;
+this.y = y;
+}
+}

@@ -1,0 +1,16 @@
+Recall	Bring the hero back to the team base	150
+Gladius	+5 Physical Attack	200
+Dirk	+10% Attack Speed	250
+Bracers	+5% Critical Chance	300
+Searing Lance	+5 Physical Attack +5% Lifesteal	370
+Kusarigama	+15 Physical Attack	420
+Boots	+2 Movement Speed	250
+Ancient Tome	+20 Magical Attack	250
+Guardian Bell	+20 Max MP	200
+Talisman of Power	+10 MP Regeneration	100
+Ring of Health	+5 HP Regeneration	100
+Charm Gem	+25 Magical Attack +5 Mana Regeneration	520
+Dragon's blood	+10% Cooldown Reduction	420
+Phoenix Tear	+300 Max HP	300
+Wooden Shield	+40 Physical Defense	250
+Leather Cloak	+40 Magical Defense	250

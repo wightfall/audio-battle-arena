@@ -1,0 +1,222 @@
+void process_player(network_event event, string[] data){
+string subtopic = data[1];
+if (subtopic == "update_location") {
+handle_update_location(data);
+} else if (subtopic == "attack") {
+handle_attack(data);
+} else if (subtopic == "creep"){
+handle_creep(data);
+} else if (subtopic == "tower"){
+handle_tower(data);
+} else if (subtopic == "win"){
+handle_endGame(data);
+} else if (subtopic == "update_player"){
+handle_update_player(data);
+} else {
+//assert(false);
+}
+}
+
+
+void handle_update_location(string[] data) {
+assert(data.length() == 5);
+string name = data[2];
+int x = string_to_number(data[3]);
+int y = string_to_number(data[4]);
+if (name != h1.name) {
+int index = findPlayer(name);
+h[index].set_location(x, y);
+/*for (int i=0;i<Grass.length;i++){
+position_sound_2d(Grass[i][index], 0, 0, ((h[index].x-h1.x)*sine(pi*h1.direction/4))-((h[index].y-h1.y)*cosine(pi*h1.direction/4)), ((h[index].x-h1.x)*cosine(pi*h1.direction/4)) + ((h[index].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+position_sound_2d(Concrete[i][index], 0, 0, ((h[index].x-h1.x)*sine(pi*h1.direction/4))-((h[index].y-h1.y)*cosine(pi*h1.direction/4)), ((h[index].x-h1.x)*cosine(pi*h1.direction/4)) + ((h[index].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+}*/
+if (h[index].x >= map_x/5 and h[index].x <= 2*map_x/5 and h[index].y >= map_y/10 and h[index].y <= map_y-map_y/10){
+pool_walk.play_2d("Grass1.ogg", h1.x, h1.y, h1.x+(h1.x-h[index].x), h1.y+(h1.y-h[index].y),false);
+p.update_listener_2d(h1.x, h1.y);
+//rand_step_grass(index);
+}
+else if (h[index].x >= 3*map_x/5 and h[index].x <= 4*map_x/5 and h[index].y >= map_y/10 and h[index].y <= map_y-map_y/10){
+pool_walk.play_2d("Grass1.ogg", h1.x, h1.y, h1.x+(h1.x-h[index].x), h1.y+(h1.y-h[index].y),false);
+p.update_listener_2d(h1.x, h1.y);
+//rand_step_grass(index);
+}
+else{
+pool_walk.play_2d("Concrete1.ogg", h1.x, h1.y, h1.x+(h1.x-h[index].x), h1.y+(h1.y-h[index].y),false);
+p.update_listener_2d(h1.x, h1.y);
+//rand_step_concrete(index);
+}
+
+}
+}
+
+void handle_attack(string[] data) {
+assert(data.length() >= 4);
+string source = data[2];
+string target = data[3];
+int i = string_to_number(data[4]);
+double calculated_hp = string_to_number(data[5]);
+if (source != h1.name and target == h1.name) {
+p.update_listener_2d(h1.x, h1.y);
+//rand_step_concrete(0);
+h1.hp = calculated_hp;
+} else if (source != h1.name and target == h[findPlayer(target)].name){
+h[findPlayer(target)].hp = calculated_hp;
+if(h[findPlayer(target)].hp <= 0){
+text_speak_interrupt(""+h[findPlayer(target)].color+" team hero has been killed.");
+}
+} else if (source != h1.name and target == "tower") {
+tw[i].hp = calculated_hp;
+} else if (source != h1.name and target == "red creep"){
+c_red[i].hp = calculated_hp;
+if(c_red[i].hp <= 0){
+pool_creep.play_stationary("creep_die.ogg",false);
+c_red[i].creep_dead();
+}
+} else if (source != h1.name and target == "blue creep"){
+c_blue[i].hp = calculated_hp;
+if(c_blue[i].hp <= 0){
+pool_creep.play_stationary("creep_die.ogg",false);
+c_blue[i].creep_dead();
+}
+} else if (source != h1.name and target == "monster"){
+mon[i].hp = calculated_hp;
+if (mon[i].hp <= 0){
+pool_monster.play_2d("monster_die.ogg", h1.x, h1.y, h1.x+((mon[i].x-h1.x)*sine(pi*h1.direction/4))-((mon[i].y-h1.y)*cosine(pi*h1.direction/4)), h1.y+((mon[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((mon[i].y-h1.y)*sine(pi*h1.direction/4)), false);
+mon[i].active = false;
+mon[i].hp = 100;
+mon[i].recall.restart();
+}
+}
+}
+
+
+void handle_creep(string[] data){
+assert(data.length() >= 4);
+string name = data[2];
+string action = data[3];
+string target = data[4];
+int j = string_to_number(data[5]);
+double calculated_hp = string_to_number(data[6]);
+if(name != h1.name){
+if(action == "attack"){
+if(target == "red creep"){
+c_red[j].hp = calculated_hp;
+if(c_red[j].hp <= 0){
+pool_creep.play_stationary("creep_die.ogg",false);
+c_red[j].creep_dead();
+}
+} else if(target == "blue creep"){
+c_blue[j].hp = calculated_hp;
+if(c_blue[j].hp <= 0){
+pool_creep.play_stationary("creep_die.ogg",false);
+c_blue[j].creep_dead();
+}
+} else if(target == h[findPlayer(target)].name){
+h[findPlayer(target)].hp = calculated_hp;
+} else if(target == h1.name){
+h1.hp = calculated_hp;
+} else if(target == "tower"){
+tw[j].hp = calculated_hp;
+}
+}
+}
+
+}
+
+void handle_tower(string[] data){
+assert(data.length() >= 4);
+string name = data[2];
+string action = data[3];
+string target = data[4];
+int j = string_to_number(data[5]);
+double calculated_hp = string_to_number(data[6]);
+if(name != h1.name){
+if(action == "attack"){
+if(target == "red creep"){
+c_red[j].hp = calculated_hp;
+if(c_red[j].hp <= 0){
+pool_creep.play_stationary("creep_die.ogg",false);
+c_red[j].creep_dead();
+}
+} else if(target == "blue creep"){
+c_blue[j].hp = calculated_hp;
+if(c_blue[j].hp <= 0){
+pool_creep.play_stationary("creep_die.ogg",false);
+c_blue[j].creep_dead();
+}
+} else if(target == h1.name){
+h1.hp = calculated_hp;
+} else if(target == h[findPlayer(target)].name){
+h[findPlayer(target)].hp = calculated_hp;
+}
+}
+}
+}
+
+void handle_endGame(string [] data){
+assert(data.length() >= 3);
+string target = data[2];
+wait(1000);
+if (h1.color != target){
+pool_end.play_stationary("victory.ogg",false);
+dlg("Victory, press enter or escape to continue.");
+}
+else if (h1.color == target){
+pool_end.play_stationary("lost.ogg",false);
+dlg("Defeat, press enter or escape to continue.");
+}
+wait(1000);
+in_session = false;
+starting = false;
+f.close();
+}
+
+void handle_update_player(string [] data){
+assert(data.length() >= 3);
+string name = data[2];
+string action = data[3];
+if(name != h1.name){
+if(action == "update_lvl"){
+int value = string_to_number(data[4]);
+int index = findPlayer(name);
+h[index].level = value;
+h[index].max_hp += 10;
+h[index].max_mp += 10;
+h[index].phy_atk += 10;
+h[index].mag_atk += 10;
+h[index].phy_def += 10;
+h[index].mag_def += 10;
+}
+} else if(action == "update_status"){
+string status = data[4];
+int value = string_to_number(data[5]);
+int index = findPlayer(name);
+if(status == "phy_atk"){
+h[index].phy_atk += value;
+} else if(status == "mag_atk"){
+h[index].mag_atk += value;
+} else if(status == "phy_def"){
+h[index].phy_def += value;
+} else if(status == "mag_def"){
+h[index].mag_def += value;
+} else if(status == "attack_speed"){
+h[index].attack_speed += value;
+} else if(status == "critical_chance"){
+h[index].critical_chance += value;
+} else if(status == "lifesteal"){
+h[index].lifesteal += value;
+} else if(status == "cd_reduction"){
+h[index].cd_reduction += value;
+} else if(status == "hp_regen"){
+h[index].hp_regen += value;
+} else if(status == "mp_regen"){
+h[index].mp_regen += value;
+} else if(status == "max_mp"){
+h[index].max_mp += value;
+} else if(status == "max_hp"){
+h[index].max_hp += value;
+} else if(status == "walk_speed"){
+h[index].walk_speed += value;
+}
+}
+}

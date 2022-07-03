@@ -1,0 +1,89 @@
+double round_furthest(double x) {
+if (x >= 0) {
+return ceiling(x);
+} else {
+return floor(x);
+}
+}
+
+vector project_forward(vector cur_pos, double direction, double length) {
+double x_plus = round(length * cosine(direction*pi/4), 0);
+double y_plus = round(length * sine(direction*pi/4), 0);
+vector v;
+v.x = cur_pos.x + x_plus;
+v.y = cur_pos.y + y_plus;
+return v;
+}
+
+bool colinear_check(vector target, vector cur_pos, vector edge, double threshold=0) {
+vector target_ray = target - cur_pos;
+vector lof = edge - cur_pos;
+double cross = target_ray.x * lof.y - target_ray.y * lof.x;
+//range check
+bool x_cond, y_cond;
+if (lof.x >= 0) {
+x_cond = cur_pos.x <= target.x and target.x <= edge.x;
+} else {
+x_cond = edge.x <= target.x and target.x <= cur_pos.x;
+}
+if (lof.y >= 0) {
+y_cond = cur_pos.y <= target.y and target.y <= edge.y;
+} else {
+y_cond = edge.y <= target.y and target.y <= cur_pos.y;
+}
+return absolute(cross) <= threshold and x_cond and y_cond;
+}
+
+double find_slope(vector p1, vector p2) {
+if (p1.x == p2.x) {
+return int_max;
+}
+return (p2.y - p1.y)/(p2.x - p1.x);
+}
+
+double triangle_area(vector p1, vector p2, vector p3) {
+return absolute(p1.x*(p2.y - p3.y) + p2.x*(p3.y - p1.y) + p3.x*(p1.y - p2.y)) / 2;
+}
+
+bool triangle_check(vector target, vector cur_pos, vector edge, double half_base=2) {
+vector c1, c2;
+double slope = find_slope(cur_pos, edge);
+if (slope == 0) {
+c1.x = edge.x;
+c1.y = edge.y+half_base;
+c2.x = edge.x;
+c2.y = edge.y-half_base;
+} else if (slope == int_max) {
+c1.x = edge.x + half_base;
+c1.y = edge.y;
+c2.x = edge.x - half_base;
+c2.y = edge.y;
+} else {
+double target_slope = -1*slope;
+double dx = half_base/square_root(1+(target_slope*target_slope));
+double dy = round_furthest(target_slope * dx);
+dx = round_furthest(dx);
+c1.x = edge.x + dx;
+c1.y = edge.y + dy;
+c2.x = edge.x - dx;
+c2.y = edge.y - dy;
+}
+double a = triangle_area(cur_pos, c1, c2);
+double a1 = triangle_area(target, c1, c2);
+double a2 = triangle_area(cur_pos, target, c2);
+double a3 = triangle_area(cur_pos, c1, target);
+bool inside = (a == a1+a2+a3);
+//alert("info", edge.x + "," + edge.y + "\n" + c1.x + "," + c1.y + "\n" + c2.x + "," + c2.y + "\n" + a + "\n" + a1 + "+" + a2 + "+" + a3 +"\n" + inside);
+return inside;
+}
+
+double vector_distance(vector p1, vector p2) {
+vector diff = p2 - p1;
+double x_square = diff.x*diff.x;
+double y_square = diff.y*diff.y;
+return square_root(x_square + y_square);
+}
+
+bool radial_check(vector target, vector cur_pos, double length) {
+return vector_distance(cur_pos, target) <= length;
+}

@@ -1,0 +1,201 @@
+#include "stack.bgt"
+#include "error.bgt"
+#include "util.bgt"
+#include "room.bgt"
+
+class RoomManager {
+Room@[] rooms(100);
+IntStack  available_room;
+dictionary room_mapper;
+dictionary name_mapper;
+
+RoomManager() {
+//initialize the stack
+for(int i=0; i<rooms.length(); i++) {
+available_room.push(i);
+}
+}
+
+/* Followings are the message format for this endpoint
+topic: room
+subtopic: create_room
+param 1: host_name = name of the owner of the room
+param 2: room_name = name of the room
+param 3: password = password for joining the room (null character \0 denotes empty password)
+*/
+void create_room(int peer_id, string[] data) {
+assert(data.length() == 5);
+string host_name = data[2];
+string room_name = data[3];
+string password = data[4];
+if (available_room.is_empty()) {
+//we used up all one hundret rooms; inform client of the room creation failed
+room_exceed_error(peer_id);
+return;
+}
+//get available room
+int room_id = available_room.pop();
+//create room and assign it to the right room index
+Room room(peer_id, host_name, room_name, password);
+@rooms[room_id] = room;
+room_mapper.set(room_name, room_id);
+name_mapper.set(host_name, room_id);
+}
+
+/* Followings are the message format for this endpoint
+topic: room
+subtopic: join_room
+param 1: name = name of the player joining the room
+param 2: room_name = name of the room
+param 3: password = password for joining the room (null character \0 denotes empty password)
+*/
+void join_room(int peer_id, string[] data) {
+assert(data.length() == 5);
+string name = data[2];
+string room_name = data[3];
+string password = data[4];
+//get the room
+if (!room_mapper.exists(room_name)) {
+room_close_error(peer_id);
+return;
+}
+int room_id;
+room_mapper.get(room_name, room_id);
+Room@ room = rooms[room_id];
+//If the game is in progress; informing the client
+if (room.is_playing) {
+game_in_progress_error(peer_id);
+return;
+}
+//check password of the room
+if (password != room.password) {
+room_password_error(peer_id);
+return;
+}
+//If we reach this point; the room could be joined
+room.join(peer_id, name);
+name_mapper.set(name, room_id);
+}
+
+/* Followings are the message format for this endpoint
+topic: room
+subtopic: leave_room
+param 1: name = name of the player leaving the room
+*/
+void leave_room(int peer_id, string[] data) {
+assert(data.length() == 3);
+string name = data[2];
+//get the room
+assert(name_mapper.exists(name));
+int room_id;
+name_mapper.get(name, room_id);
+Room@ room = rooms[room_id];
+string room_name = room.room_name;
+bool is_destroy = room.leave_room(peer_id, name);
+if (is_destroy) {
+name_mapper.delete(name);
+string[] name_list = room.get_peer_name_list();
+for(int i=0; i < name_list.length(); i++) {
+name_mapper.delete(name_list[i]);
+}
+room_mapper.delete(room_name);
+room.destroy();
+@rooms[room_id] = null;
+available_room.push(room_id);
+}
+}
+
+/* Followings are the message format for this endpoint
+topic: room
+subtopic: switch_side
+param 1: name = name of the player leaving the room
+*/
+void switch_side(int peer_id, string[] data) {
+assert(data.length() == 3);
+string name = data[2];
+//get the room
+assert(name_mapper.exists(name));
+int room_id;
+name_mapper.get(name, room_id);
+Room@ room = rooms[room_id];
+room.switch_side(peer_id, name);
+}
+
+/* Followings are the message format for this endpoint
+topic: room
+subtopic: list_member
+param 1: name = name of the player listing members of the room
+*/
+void list_member(int peer_id, string[] data) {
+assert(data.length() == 3);
+string name = data[2];
+//get the room
+assert(name_mapper.exists(name));
+int room_id;
+name_mapper.get(name, room_id);
+Room@ room = rooms[room_id];
+room.list(peer_id);
+}
+
+/* followings are the message format for this endpoint
+topic: room
+subtopic: list_room
+*/
+void list_room(int peer_id, string[] data) {
+string[] room_list = room_mapper.get_keys();
+string[][] pre_array;
+pre_array.resize(room_list.length());
+for(int i=0; i < room_list.length(); i++) {
+pre_array[i].resize(3);
+pre_array[i][0] = room_list[i];
+int idx;
+room_mapper.get(room_list[i], idx);
+Room@ room = rooms[idx];
+if (room.is_password) {
+pre_array[i][1] = "1";
+} else {
+pre_array[i][1] = "0";
+}
+if (room.is_playing) {
+pre_array[i][2] = "1";
+} else {
+pre_array[i][2] = "0";
+}
+}
+string result = serialize_2d_array(pre_array);
+send_reliable_msg(peer_id,0,"room","room_list_result",result);
+}
+/* followings are the message format for this endpoint
+topic: room
+subtopic: start
+param 1: name = name of the user who started the game
+param 2: map_x = maximum map boundry in x-axis direction
+param 3: map_y = maximum map boundry in y-axis direction
+*/
+void start(int peer_id, string[] data) {
+assert(data.length() == 5);
+string name = data[2];
+int map_x = string_to_number(data[3]);
+int map_y = string_to_number(data[4]);
+int idx;
+name_mapper.get(name, idx);
+Room@ room = rooms[idx];
+if (name != room.host_name) {
+not_allow_error(peer_id);
+return;
+}
+room.start(peer_id, name, map_x, map_y);
+}
+
+void pass_message(string name, string message) {
+int idx;
+name_mapper.get(name, idx);
+rooms[idx].broadcast_unreliable(message, 1);
+}
+
+void pass_message(string name, string message, int peer_id) {
+int idx;
+name_mapper.get(name, idx);
+rooms[idx].broadcast_unreliable(message, 1, peer_id);
+}
+}

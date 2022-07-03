@@ -1,0 +1,59 @@
+void key_status(){
+if (key_pressed(KEY_H)){
+h1.show_health();
+} else if (key_pressed(KEY_M)){
+h1.show_money();
+} else if (key_pressed(KEY_C)){
+h1.show_location();
+} else if (key_pressed(KEY_P)){
+check_where_player();
+} else if (key_pressed(KEY_W)) {
+send_reliable_msg(server_peer_id, 0, "room", "list_member", host_name);
+} else if((!key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT)) and key_down(KEY_COMMA) and historyKeyTimer.elapsed >= historyKeyRepeat){
+if (historyIndex > 0){
+historyIndex--;
+}
+if(screen_reader_is_running(4)){
+screen_reader_speak(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+historyKeyTimer.restart();
+} else if ((!key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT)) and key_down(KEY_PERIOD) and historyKeyTimer.elapsed >= historyKeyRepeat){
+if (historyIndex < gameHistory.length-1){
+historyIndex++;
+}
+if(screen_reader_is_running(4)){
+screen_reader_speak(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+historyKeyTimer.restart();
+} else if((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_COMMA)){
+historyIndex = 0;
+if(screen_reader_is_running(4)){
+screen_reader_speak(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+} else if ((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_PERIOD)){
+historyIndex = gameHistory.length-1;
+if(screen_reader_is_running(4)){
+screen_reader_speak(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+}
+// for F1 to F10
+for (int i=0;i<10;i++){
+if (key_pressed(i+59)){
+tw[i].show_help(i);
+}
+}
+// for F11 and F12
+for (int i=0;i<2;i++){
+if (key_pressed(i+87)){
+tw[i+10].show_help(i+10);
+}
+}
+}

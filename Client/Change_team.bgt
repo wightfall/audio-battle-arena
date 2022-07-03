@@ -1,0 +1,16 @@
+void change_team(){
+if (h1.color == "Blue"){
+h1.color = "Red";
+h1.x = map_x/2;
+h1.y = map_y;
+h1.direction = 6;
+text_speak_interrupt("You are now currently in Red team.");
+}
+else if (h1.color == "Red"){
+h1.color = "Blue";
+h1.x = map_x/2;
+h1.y = 0;
+h1.direction = 2;
+text_speak_interrupt("You are now currently in Blue team.");
+}
+}

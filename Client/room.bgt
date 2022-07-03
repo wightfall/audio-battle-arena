@@ -1,0 +1,178 @@
+#include "process_room.bgt"
+sound_pool pool_r;
+
+bool wait_active = false;
+bool starting = false;
+void room_guest_waiting() {
+wait_active = true;
+while(wait_active) {
+event=host.request();
+if(event.type==event_receive){
+string[] data = string_split(event.message, "\t", true);
+assert(data.length() >= 2);
+string topic = data[0];
+string subtopic = data[1];
+if (topic == "room") {
+if (subtopic == "join_success") {
+pool_r.play_stationary("enter_room.ogg",false);
+handle_join_success(data);
+} else if (subtopic == "leave_success") {
+pool_r.play_stationary("leave_room.ogg",false);
+handle_leave_success(data);
+} else if (subtopic == "destroy") {
+text_speak_interrupt("Host is leaving the room.");
+wait(2000);
+break;
+} else if (subtopic == "switch_success") {
+handle_switch_success(data);
+} else if (subtopic == "room_member") {
+handle_room_member(data);
+} else if (subtopic == "start_prepare") {
+handle_start_prepare(data);
+pool_r.play_stationary("start_room.ogg",false);
+} else if (subtopic == "chat"){
+handle_chat(data);
+pool_r.play_stationary("chat.ogg",false);
+} else {
+assert(false);
+}
+} else if (topic == "error") {
+if (subtopic == "room_password") {
+pool_r.play_stationary("menu_deny.ogg",false);
+text_speak_interrupt("Wrong password");
+wait(2000);
+wait_active = false;
+break;
+} else if (subtopic == "room_close") {
+pool_r.play_stationary("menu_deny.ogg",false);
+text_speak_interrupt("This room has been closed by host");
+wait(2000);
+wait_active = false;
+break;
+} else {
+assert(false);
+}
+} else {
+assert(false);
+}
+}
+room_key();
+if (key_pressed(KEY_RETURN)) {
+pool_r.play_stationary("menu_deny.ogg",false);
+text_speak_interrupt("Only host can start the game");
+} else if (key_pressed(KEY_F4)) {
+getmotd();
+} else if (key_pressed(KEY_ESCAPE)) {
+pool_r.play_stationary("leave_room.ogg",false);
+send_reliable_msg(server_peer_id, 0, "room", "leave_room", host_name);
+break;
+}
+}
+}
+
+
+void room_host_waiting() {
+wait_active = true;
+while(wait_active) {
+event=host.request();
+if(event.type==event_receive){
+string[] data = string_split(event.message, "\t", true);
+assert(data.length() >= 2);
+string topic = data[0];
+string subtopic = data[1];
+if (topic == "room") {
+if (subtopic == "create_success") {
+pool_r.play_stationary("enter_room.ogg",false);
+handle_create_success(data);
+} else if (subtopic == "join_success") {
+pool_r.play_stationary("enter_room.ogg",false);
+handle_join_success(data);
+} else if (subtopic == "leave_success") {
+pool_r.play_stationary("leave_room.ogg",false);
+handle_leave_success(data);
+} else if (subtopic == "destroy") {
+text_speak_interrupt("Host is leaving the room.");
+wait(2000);
+break;
+} else if (subtopic == "switch_success") {
+handle_switch_success(data);
+} else if (subtopic == "room_member") {
+handle_room_member(data);
+} else if (subtopic == "start_prepare") {
+handle_start_prepare(data);
+pool_r.play_stationary("start_room.ogg",false);
+} else if (subtopic == "chat"){
+handle_chat(data);
+pool_r.play_stationary("chat.ogg",false);
+} else {
+assert(false);
+}
+} else {
+assert(false);
+}
+}
+room_key();
+if (key_pressed(KEY_ESCAPE) and !starting) {
+pool_r.play_stationary("leave_room.ogg",false);
+send_reliable_msg(server_peer_id, 0, "room", "leave_room", host_name);
+break;
+} else if (key_pressed(KEY_F4)) {
+getmotd();
+} else if (key_pressed(KEY_RETURN) and !starting) {
+starting = true;
+send_reliable_msg(server_peer_id, 0, "room", "start", host_name, map_x, map_y);
+}
+}
+}
+
+void room_key(){
+if (key_pressed(KEY_W)) {
+send_reliable_msg(server_peer_id, 0, "room", "list_member", host_name);
+} else if (key_pressed(KEY_SLASH)) {
+pool_r.play_stationary("change_team.ogg",false);
+send_reliable_msg(server_peer_id, 0, "room", "switch_side", host_name);
+} else if (key_pressed(KEY_BACKSLASH)){
+string message = chatBox(event);
+if (message != ""){
+send_reliable_msg(server_peer_id, 0, "room", "chat", h1.name, message);
+}
+} else if((!key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT)) and key_down(KEY_COMMA) and historyKeyTimer.elapsed >= historyKeyRepeat){
+p.play_stationary("history_move.ogg",false);
+if (historyIndex > 0){
+historyIndex--;
+}
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+historyKeyTimer.restart();
+} else if ((!key_down(KEY_LSHIFT) and !key_down(KEY_RSHIFT)) and key_down(KEY_PERIOD) and historyKeyTimer.elapsed >= historyKeyRepeat){
+p.play_stationary("history_move.ogg",false);
+if (historyIndex < gameHistory.length-1){
+historyIndex++;
+}
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+historyKeyTimer.restart();
+} else if((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_COMMA)){
+historyIndex = 0;
+p.play_stationary("history_move.ogg",false);
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+} else if ((key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT)) and key_pressed(KEY_PERIOD)){
+historyIndex = gameHistory.length-1;
+p.play_stationary("history_move.ogg",false);
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, gameHistory[historyIndex]);
+} else {
+voice.speak(gameHistory[historyIndex]);
+}
+} 
+}

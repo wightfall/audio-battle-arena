@@ -1,0 +1,42 @@
+#include "monster.bgt"
+sound_pool pool_monster;
+
+void spawn_monster(){
+for (int i=0;i<mon.length;i++){
+if (i < mon.length/2){
+mon[i].set_position(25+(i%3)*5, (i/3)*20+30);
+}
+else{
+mon[i].set_position(65+(i%3)*5, ((i/3)*20)%(mon.length/2)+30);
+}
+pool_monster.play_2d("monster_spawn.ogg", h1.x, h1.y, h1.x+((mon[i].x-h1.x)*sine(pi*h1.direction/4))-((mon[i].y-h1.y)*cosine(pi*h1.direction/4)), h1.y+((mon[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((mon[i].y-h1.y)*sine(pi*h1.direction/4)), false);
+}
+}
+
+void monster_action(){
+for (int i = 0;i<mon.length;i++){
+if (mon[i].hp < 100){
+if (absolute(mon[i].x-h1.x) <= 2 and absolute(mon[i].y-h1.y) <= 2 and mon[i].hitTimer.elapsed>=1000){
+h1.hp = h1.hp - mon[i].phy_atk;
+pool_monster.play_2d("monster_voice.ogg", h1.x, h1.y, h1.x+((mon[i].x-h1.x)*sine(pi*h1.direction/4))-((mon[i].y-h1.y)*cosine(pi*h1.direction/4)), h1.y+((mon[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((mon[i].y-h1.y)*sine(pi*h1.direction/4)), false);
+mon[i].hitTimer.restart();
+}
+}
+if (mon[i].hp <= 0){
+pool_monster.play_2d("monster_die.ogg", h1.x, h1.y, h1.x+((mon[i].x-h1.x)*sine(pi*h1.direction/4))-((mon[i].y-h1.y)*cosine(pi*h1.direction/4)), h1.y+((mon[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((mon[i].y-h1.y)*sine(pi*h1.direction/4)), false);
+p.update_listener_2d(h1.x, h1.y);
+mon[i].active = false;
+mon[i].hp = 100;
+mon[i].recall.restart();
+h1.say_got_money();
+pool_monster.play_stationary("Coins.ogg",false);
+h1.money += 100;
+h1.exp += 200;
+h1.check_lvl_up();
+}
+if (mon[i].recall.elapsed >= 30000 and !mon[i].active){
+mon[i].active = true;
+pool_monster.play_2d("monster_spawn.ogg", h1.x, h1.y, h1.x+((mon[i].x-h1.x)*sine(pi*h1.direction/4))-((mon[i].y-h1.y)*cosine(pi*h1.direction/4)), h1.y+((mon[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((mon[i].y-h1.y)*sine(pi*h1.direction/4)), false);
+}
+}
+}

@@ -1,0 +1,35 @@
+void process_error(network_event event, string[] data){
+string subtopic = data[1];
+if (subtopic == "not_authorize") {
+handle_not_authorize_error();
+} else {
+assert(false);
+}
+}
+
+void handle_not_authorize_error() {
+string name = "";
+audio_form form;
+if(screen_reader_is_running(4)){
+form.set_output_mode(NVDA);
+} else {
+form.set_output_mode(0);
+}
+form.create_window(game_name+" version"+game_version, true, false);
+int name_edit_box =form.create_input_box("Enter your name: ");
+int ok_btn =form.create_button("OK", true, false);
+int cancel_btn =form.create_button("Cancel", false, true);
+form.focus(name_edit_box);
+while (true) {
+form.monitor();
+wait(5);
+if (form.is_pressed(ok_btn)) {
+name = form.get_text(name_edit_box);
+break;
+} else if (form.is_pressed(cancel_btn)) {
+name = "";
+}
+}
+send_reliable_msg(1, 0, "player", "login", name);
+}
+

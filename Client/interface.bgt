@@ -1,0 +1,10 @@
+interface Attackable {
+//all attackable item should implement this interface
+void take_physical_damage(double damage);
+void take_magical_damage(double damage);
+}
+
+interface Usable {
+//all usable item should implement this interface
+void use(hero@ h);
+}

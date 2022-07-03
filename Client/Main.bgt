@@ -1,0 +1,58 @@
+// Include all files
+#include "m_pro.bgt"
+#include "Config.bgt"
+#include "hero.bgt"
+#include "Creep.bgt"
+#include "Start.bgt"
+#include "tower.bgt"
+#include "text_speak.bgt"
+#include "sound_positioning.bgt"
+#include "menu.bgt"
+#include "monster.bgt"
+#include "monster_action.bgt"
+#include "dlg.bgt"
+#include "sound_pool.bgt"
+#include "dlgplay.bgt"
+#include "motd.bgt"
+// Public variables:
+string game_name = "Audio battle arena";
+string game_version = "0.1";
+string [] gameHistory(0);
+int historyIndex = 0;
+int historyKeyRepeat = 200;
+timer historyKeyTimer;
+int countPlayer = 0;
+string networkMessage;
+sound_pool p;
+// create voice pobject to read the text
+tts_voice voice;
+// Create my player
+hero h1;
+// Create other player
+hero [] h(10);
+// Create creep
+creep [] c_blue(0);
+creep [] c_red(0);
+timer creep_respawn;
+//Create Tower
+tower [] tw(12);
+Monster[]  mon (48);
+
+// Timer for player speed
+timer walk_speed;
+// variable for check when player die
+timer dieTimer;
+bool die = false;
+int dieTime = 1000;
+file f;
+void main(){
+set_sound_storage("sounds.dat");
+set_sound_decryption_key("test",true);
+p.max_distance=20;
+p.behind_pitch_decrease=5;
+show_game_window(game_name+" version"+game_version);
+dlgplay("intro.ogg",true,20);
+
+dlg("welcome to audio battle arena, press enter or escape to continue.");
+mainmenu();
+}

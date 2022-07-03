@@ -1,0 +1,31 @@
+class creep
+{
+string color;
+int x,y;
+double hp = 35;
+int walk_speed=250;
+double phy_atk=3;
+timer walk_speedtimer;
+timer attack_timer;
+//sound@ walk = creep_walk;
+//sound@ creep_die_sound = creep_die;
+//sound@ attack_sound = creep_fist;
+void set_location(int x1, int y1)
+{
+this.x=x1;
+this.y=y1;
+}
+
+void creep_dead(){
+this.walk_speedtimer.restart();
+this.walk_speedtimer.pause();
+this.attack_timer.restart();
+this.attack_timer.pause();
+if(this.color == "red"){
+this.set_location(50,250);
+} else if(this.color == "blue"){
+this.set_location(50,-50);
+}
+}
+
+}

@@ -1,0 +1,131 @@
+sound_pool pool_creep;
+void spawn_creep(){
+for (int i=0;i<15;i++){
+creep cb;
+cb.color="blue";
+if(i>=0 and i<5){
+cb.set_location(1+(map_x/25)*i,5);
+}
+else if(i>=5 and i<10){
+cb.set_location(41+(map_x/25*(i-5)),5);
+}
+else if(i>=10 and i<15){
+cb.set_location(81+(map_x/25*(i-10)),5);
+}
+c_blue.insert_last(cb);
+}
+for (int i=0;i<15;i++){
+creep cr;
+cr.color="red";
+if(i>=0 and i<5){
+cr.set_location(1+(map_x/25)*i,map_y-5);
+}
+else if(i>=5 and i<10){
+cr.set_location(41+(map_x/25*(i-5)),map_y-5);
+}
+else if(i>=10 and i<15){
+cr.set_location(81+(map_x/25*(i-10)),map_y-5);
+}
+c_red.insert_last(cr);
+}
+}
+
+void creep_action(){
+auto_creep(c_blue, c_red, 1);
+auto_creep(c_red, c_blue, -1);
+}
+
+void auto_creep(creep [] c1, creep [] c2, int walk){
+for(int i=0;i<c1.length;i++){
+for(int j=0;j<c2.length;j++){
+if(absolute(c1[i].x-c2[j].x)<=2 and absolute(c1[i].y-c2[j].y)<=2){
+c1[i].walk_speedtimer.restart();
+c1[i].walk_speedtimer.pause();
+if(c1[i].attack_timer.elapsed >= 1000){
+if(absolute(c1[i].x-h1.x) <= 10 and absolute(c1[i].y-h1.y) <= 10 and h1.color == "red"){
+pool_creep.play_stationary("creep_fist.ogg",false);
+//c1[i].attack_sound.stop();
+//c1[i].attack_sound.play();
+}
+c2[j].hp = c2[j].hp - c1[i].phy_atk;
+send_reliable_msg(1, 0, "player", "creep", h1.name, "attack", "red creep", j, c2[j].hp);
+c1[i].attack_timer.restart();
+if(c2[j].hp<=0){
+if(absolute(c2[j].x-h1.x) <= 10 and absolute(c2[j].y-h1.y) <= 10 and h1.color == "red"){
+pool_creep.play_stationary("creep_die.ogg",false);
+//c2[j].creep_die_sound.play_looped();
+}
+c2[j].creep_dead();
+c1[i].walk_speedtimer.resume();
+}
+}
+}
+}
+if(absolute(c1[i].x-h1.x) <= 2 and absolute(c1[i].y-h1.y) <= 2 and h1.color == "red"){
+c1[i].walk_speedtimer.restart();
+c1[i].walk_speedtimer.pause();
+if(c1[i].attack_timer.elapsed >= 1000){
+pool_creep.play_stationary("creep_fist.ogg",false);
+//c1[i].attack_sound.stop();
+//c1[i].attack_sound.play();
+h1.hp = h1.hp - c1[i].phy_atk;
+send_reliable_msg(1, 0, "player", "creep", h1.name, "attack", h1.name, i, h1.hp);
+c1[i].attack_timer.restart();
+}
+} else if(absolute(c1[i].x-h1.x) > 2 and absolute(c1[i].y-h1.y) > 2 and h1.color == "red"){
+c1[i].walk_speedtimer.resume();
+}
+for(int j=0;j<h.length;j++){
+if(absolute(c1[i].x-h[j].x) <= 2 and absolute(c1[i].y-h[j].y) <= 2 and h[j].color == "red"){
+if(c1[i].attack_timer.elapsed >= 1000){
+if(absolute(c1[i].x-h1.x) <= 10 and absolute(c1[i].y-h1.y) <= 10 and h1.color == "red"){
+pool_creep.play_stationary("creep_fist.ogg",false);
+//c1[i].attack_sound.stop();
+//c1[i].attack_sound.play();
+}
+h[j].hp = h[j].hp - c1[i].phy_atk;
+send_reliable_msg(1, 0, "player", "creep", h1.name, "attack", h[j].name, j, h[j].hp);
+c1[i].attack_timer.restart();
+}
+} else if(absolute(c1[i].x-h[j].x) > 2 and absolute(c1[i].y-h[j].y) > 2 and h[j].color == "red"){
+c1[i].walk_speedtimer.resume();
+}
+}
+for(int j=0;j<tw.length;j++){
+if(absolute(c1[i].x-tw[j].x) <= 2 and absolute(c1[i].y-tw[j].y) <= 2 and tw[j].color == "red"){
+c1[i].walk_speedtimer.restart();
+c1[i].walk_speedtimer.pause();
+if(c1[i].attack_timer.elapsed >= 1000){
+if(absolute(c1[i].x-h1.x) <= 10 and absolute(c1[i].y-h1.y) <= 10 and h1.color == "red"){
+pool_creep.play_stationary("creep_fist.ogg",false);
+//c1[i].attack_sound.stop();
+//c1[i].attack_sound.play();
+}
+tw[j].hp = tw[j].hp-c1[i].phy_atk;
+send_reliable_msg(1, 0, "player", "creep", h1.name, "attack", "tower", j, tw[j].hp);
+c1[i].attack_timer.restart();
+if(tw[j].hp <= 0){
+c1[i].walk_speedtimer.resume();
+}
+}
+}
+}
+// creep walk
+if(c1[i].walk_speedtimer.elapsed>=c1[i].walk_speed){
+if(c1[i].y >= 0 and c1[i].y<map_y){
+c1[i].y += walk;
+}
+else if(c1[i].x<map_x/2){
+c1[i].x++;
+}
+else if(c1[i].x>map_x/2){
+c1[i].x--;
+}
+if (absolute(c1[i].x-h1.x) <= 10 and absolute(c1[i].y-h1.y) <= 10){
+pool_creep.play_stationary("creep_walk.ogg",false);
+//c1[i].walk.play_looped();
+}
+c1[i].walk_speedtimer.restart();
+}
+}
+}

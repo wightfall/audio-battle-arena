@@ -1,0 +1,21 @@
+string text_speak(string message){
+if(screen_reader_is_running(4)){
+screen_reader_speak(NVDA, message);
+}
+else{
+voice.speak_wait(message);
+}
+gameHistory.insert_last(message);
+return message;
+}
+
+string text_speak_interrupt(string message){
+if(screen_reader_is_running(4)){
+screen_reader_speak_interrupt(NVDA, message);
+}
+else{
+voice.speak_interrupt(message);
+}
+gameHistory.insert_last(message);
+return message;
+}

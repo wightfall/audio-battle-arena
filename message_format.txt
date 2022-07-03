@@ -1,0 +1,96 @@
+//Nessage spec
+{...} denote single values E.G. {name}
+[...] denotes 1d array E.G. [room_member]
+[...[...|...]] denotes 2d array E.G. [start_condition[player_name|color|start_x|start_y|start_direction]]
+each entry in the message is seperated by tab character (\t)
+//Room endpoint
+room	create_room	{host_name}	{room_name}	{room_password}
+param:
+host_name = name of the owner of the room
+room_name = name of the room
+room_password = password for joining the room (null character \0 denotes empty password)
+response on success:
+room	create_success	{name}	{color}
+- name: name of the host of the room
+- color: color initially being assigned to the host
+response on failure:
+error	room_exceed
+- the server is used up all the available room slot
+
+
+room	join_room	{name}	{room_name}	{room_password}
+param:
+name = name of the player joining the room
+room_name = name of the room
+room_password = password for joining the room (null character \0 denotes empty password)
+response on success:
+response on success:
+room	join_success	{name}	{color}
+- name: name of the client joining the room
+- color: color initially being assigned to the client joining
+response on failure:
+error	game_in_progress
+- the game has already been running
+error	room_password
+- client sent wrong room password
+
+room	leave_room	{name}
+param:
+name = name of the player leaving the room
+response on success:
+room	leave_success	{name}
+- name: name of the client leaving the room
+
+room	switch_side	{name}
+param:
+name = name of the player leaving the room
+response on success:
+room	switch_success	{name}	{new_color}
+- name: name of the client switching side
+- new_color: new color of the client
+
+room	list_member	{name}
+param:
+name = name of the player listing members of the room
+response on success:
+room	room_member	{blue_count}	[blue_member]	{red_count}	[red_member]
+- blue_count: number of client in blue team
+- blue_member: an array containing name of the client in blue team
+- red_count: number of client in red team
+- red_member: an array containing name of the client in red team
+
+room	list_room
+response on success:
+room	room_list_result	[room[room_name|is_password|is_running]]
+room_name = name of the room
+is_password = 1 if the room is protected by password, 0 otherwise
+is_running = 1 if the game in this room is already running, 0 otherwise
+
+room	start	{name}	{map_x}	{map_y}
+param:
+name = name of the user who started the game
+map_x = maximum map boundry in x-axis direction
+map_y = maximum map boundry in y-axis direction
+response on success:
+room	start_prepare	[start_condition[player_name|color|start_x|start_y|start_direction]]
+- start_condition: an array containing the start condition of each hero
+> player_name: name of the client owning the hero
+> color: color of the hero
+> start_x: initial start position in x-axes
+> start_y: initial start position in y-axes
+> start_direction: initial facing direction of the hero
+response on failure:
+error	not_allow
+- non-host client is not allow to start the game
+
+//broadcast message: the following messages are broadcast to all the members in a particular room
+room	join_success	{name}	{color}
+- name: name of the client joining the room
+- color: color initially being assigned to the client joining
+room	leave_success	{name}
+- name: name of the client leaving the room
+room	room_destroy	{room_name}
+- room_name: name of the room that is being destroyed
+room	switch_success	{name}	{new_color}
+- name: name of the client switching side
+- new_color: new color of the client

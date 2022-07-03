@@ -1,0 +1,78 @@
+sound [] TowerAttack(tw.length);
+sound_pool pool_tower;
+void tower_attack()
+{
+for (int i = 0;i<tw.length;i++){
+if (TowerAttack[i].active == false){
+TowerAttack[i].load("Attack2.ogg");
+}
+}
+for (int i = 0;i<tw.length;i++){
+if ((tw[i].color == "blue" or tw[i].color == "red") and tw[i].type == "attack" and tw[i].hit_speed.elapsed>=1000){
+tw[i].hit_speed.restart();
+
+if (tw[i].color == "blue"){
+for (int j=0;j<c_red.length;j++){
+if (absolute(tw[i].x - c_red[j].x)<=10 and absolute(tw[i].y - c_red[j].y)<=10){
+c_red[j].hp -= 20;
+if(c_red[j].hp <= 0){
+if(absolute(c_red[i].x-h1.x) <= 10 and absolute(c_red[i].y-h1.y) <= 10 and h1.color == "red"){
+pool_creep.play_stationary("creep_die.ogg",false);
+//c_red[j].creep_die_sound.stop();
+//c_red[j].creep_die_sound.play();
+}
+c_red[j].creep_dead();
+}
+send_reliable_msg(1, 0, "player", "tower", h1.name, "attack", "red creep", j, c_red[j].hp);
+}
+}
+if (absolute(tw[i].x - h1.x)<=10 and absolute(tw[i].y - h1.y)<=10 and h1.color == "red"){
+h1.hp = h1.hp-20;
+tw[i].attack_speed.restart();
+//Hit[0].play();
+send_reliable_msg(1, 0, "player", "tower", h1.name, "attack", h1.name, i, h1.hp);
+}
+
+}
+else if (tw[i].color == "red"){
+for (int j=0;j<c_blue.length;j++){
+if (absolute(tw[i].x - c_blue[j].x)<=10 and absolute(tw[i].y - c_blue[j].y)<=10){
+c_blue[j].hp -= 20;
+if(c_blue[j].hp <= 0){
+if(absolute(c_blue[i].x-h1.x) <= 10 and absolute(c_blue[i].y-h1.y) <= 10 and h1.color == "blue"){
+pool_creep.play_stationary("creep_die.ogg",false);
+//c_blue[j].creep_die_sound.stop();
+//c_blue[j].creep_die_sound.play();
+}
+c_blue[j].creep_dead();
+}
+send_reliable_msg(1, 0, "player", "tower", h1.name, "attack", "blue creep", j, c_blue[j].hp);
+}
+}
+if (absolute(tw[i].x - h1.x)<=10 and absolute(tw[i].y - h1.y)<=10 and h1.color == "blue"){
+h1.hp = h1.hp-20;
+tw[i].attack_speed.restart();
+//Hit[0].play();
+send_reliable_msg(1, 0, "player", "tower", h1.name, "attack", h1.name, i, h1.hp);
+}
+}
+
+}
+if (tw[i].hp <= 0 and tw[i].type != "main" and tw[i].active){
+tw[i].x = -100;
+tw[i].y = -100;
+text_speak_interrupt(tw[i].color+" team tower has been destroyed.");
+tw[i].active = false;
+pool_tower.play_stationary("tower_destroy.ogg",false);
+if (h1.color != tw[i].color){
+h1.money += 200;
+}
+for (int j=0;i<h.length();i++){
+if (h[j].color != tw[i].color){
+h[j].money += 200;
+}
+}
+}
+
+}
+}

@@ -1,0 +1,7 @@
+void sound_play_2d(string fname, int listener_x, int listener_y, int source_x, int source_y, int dir, bool loop){
+if(dir == 2){
+p.play_2d(fname, listener_x, listener_y, source_x, source_y, loop, false);
+} else if(dir == 6){
+p.play_2d(fname, listener_x, listener_y, listener_x+listener_x-source_x, listener_y+listener_y-source_y, loop, false);
+}
+}

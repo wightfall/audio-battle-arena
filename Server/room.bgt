@@ -1,0 +1,264 @@
+class PeerItem {
+string name;
+int peer_id;
+string color;
+
+PeerItem(string name, int peer_id, string color) {
+this.name = name;
+this.peer_id = peer_id;
+this.color = color;
+}
+}
+
+class Room {
+string room_name;
+string host_name;
+int host_peer_id;
+string password;
+bool is_playing;
+bool is_password;
+string[] blue_name;
+int blue_count = 0;
+string[] red_name;
+int red_count = 0;
+PeerItem@[] peer_list;
+dictionary player_mapper;
+
+Room(int peer_id, string host_name, string room_name, string password) {
+this.host_peer_id = peer_id;
+this.room_name = room_name;
+this.host_name = host_name;
+this.password = password;
+this.is_playing = false;
+if (password == "\0") {
+is_password = false;
+} else {
+is_password = true;
+}
+blue_name.reserve(10);
+red_name.reserve(10);
+player_mapper.set(host_name, peer_list.length());
+PeerItem p(host_name, peer_id, "blue");
+peer_list.insert_last(p);
+add_color(host_name, "blue");
+send_reliable_msg(peer_id, 0, "room", "create_success", "blue");
+}
+
+string join(int peer_id, string name) {
+string color;
+if (blue_count > red_count) {
+color = "red";
+} else {
+color = "blue";
+}
+add_color(name, color);
+player_mapper.set(name, peer_list.length());
+PeerItem p(name, peer_id, color);
+peer_list.insert_last(p);
+string[] msg = {"room", "join_success", name, color};
+string constructed_msg = construct_message(msg);
+broadcast_reliable(constructed_msg, 0);
+return color;
+}
+
+bool leave_room(int peer_id, string name) {
+assert(player_mapper.exists(name));
+int idx;
+player_mapper.get(name, idx);
+PeerItem@ p = peer_list[idx];
+if (is_playing == true) {
+string[] pos_msg = {"player", "update_location", name, -100, -100};
+string constructed_pos_msg = construct_message(pos_msg);
+broadcast_reliable(constructed_pos_msg, 0);
+}
+if (name != this.host_name || is_playing == true) {
+//normal player leaving the room
+remove_color(p.name, p.color);
+string[] msg = {"room", "leave_success", name};
+string constructed_msg = construct_message(msg);
+broadcast_reliable(constructed_msg, 0);
+peer_list.remove_at(idx);
+recompute_mapper();
+if (peer_list.length() == 0) {
+return true;
+} else {
+return false;
+}
+} else {
+//host is leaving the room; destroying it
+peer_list.remove_at(idx);
+recompute_mapper();
+string[] msg = {"room", "room_destroy", this.room_name};
+string constructed_msg = construct_message(msg);
+send_reliable_msg(peer_id, 0, "room", "leave_success", name);
+broadcast_reliable(constructed_msg, 0);
+return true;
+}
+}
+
+string[] get_peer_name_list() {
+string[] result(peer_list.length());
+for(int i=0; i < peer_list.length(); i++) {
+result[i] = peer_list[i].name;
+}
+return result;
+}
+
+void destroy() {
+player_mapper.delete_all();
+peer_list.resize(0);
+blue_name.resize(0);
+red_name.resize(0);
+}
+
+void switch_side(int peer_id, string name) {
+assert(player_mapper.exists(name));
+int idx;
+player_mapper.get(name, idx);
+PeerItem@ p = peer_list[idx];
+string new_color;
+if (p.color == "blue") {
+new_color = "red";
+} else {
+new_color = "blue";
+}
+remove_color(p.name, p.color);
+p.color = new_color;
+add_color(p.name, p.color);
+string[] msg = {"room", "switch_success", name, new_color};
+string constructed_msg = construct_message(msg);
+broadcast_reliable(constructed_msg, 0);
+}
+
+string get_color(string name) {
+assert(player_mapper.exists(name));
+int idx;
+player_mapper.get(name, idx);
+PeerItem@ p = peer_list[idx];
+return p.color;
+}
+
+void list(int peer_id) {
+assert(red_count == red_name.length());
+assert(blue_count == blue_name.length());
+string red_string = serialize_array(red_name);
+string blue_string = serialize_array(blue_name);
+send_reliable_msg(peer_id, 0, "room", "room_member", blue_count, blue_string, red_count, red_string);
+}
+
+void start(int peer_id, string name, int map_x, int map_y) {
+string[][] start_condition;
+start_condition.resize(peer_list.length());
+for(int i=0; i < peer_list.length; i++) {
+start_condition[i].resize(5);
+start_condition[i][0] = peer_list[i].name;
+start_condition[i][1] = peer_list[i].color;
+if (peer_list[i].color == "blue") {
+start_condition[i][2] = map_x/2;
+start_condition[i][3] = 0;
+start_condition[i][4] = 2;
+} else {
+start_condition[i][2] = map_x/2;
+start_condition[i][3] = map_y;
+start_condition[i][4] = 6;
+}
+}
+string raw = serialize_2d_array(start_condition);
+string[] msg = {"room", "start_prepare", raw};
+string constructed_msg = construct_message(msg);
+broadcast_reliable(constructed_msg, 0);
+is_playing = true;
+}
+
+bool broadcast_reliable(string packet, int channel) {
+bool result = true;
+for(int i=0; i<peer_list.length(); i++) {
+int peer_id = peer_list[i].peer_id;
+log.add_entry("Reliable:" + peer_id + "|" + channel + "|" + packet);
+bool res = host.send_reliable(peer_id, packet, channel);
+if (!res) {
+result = false;
+}
+}
+return result;
+}
+
+bool broadcast_reliable(string packet, int channel, int except) {
+bool result = true;
+for(int i=0; i<peer_list.length(); i++) {
+int peer_id = peer_list[i].peer_id;
+if (peer_id == except) {
+continue;
+}
+log.add_entry("Reliable:" + peer_id + "|" + channel + "|" + packet);
+bool res = host.send_reliable(peer_id, packet, channel);
+if (!res) {
+result = false;
+}
+}
+return result;
+}
+
+bool broadcast_unreliable(string packet, int channel) {
+bool result = true;
+for(int i=0; i<peer_list.length(); i++) {
+int peer_id = peer_list[i].peer_id;
+log.add_entry("Unreliable:" + peer_id + "|" + channel + "|" + packet);
+bool res = host.send_unreliable(peer_id, packet, channel);
+if (!res) {
+result = false;
+}
+}
+return result;
+}
+
+bool broadcast_unreliable(string packet, int channel, int except) {
+bool result = true;
+for(int i=0; i<peer_list.length(); i++) {
+int peer_id = peer_list[i].peer_id;
+if (peer_id == except) {
+continue;
+}
+log.add_entry("Unreliable:" + peer_id + "|" + channel + "|" + packet);
+bool res = host.send_unreliable(peer_id, packet, channel);
+if (!res) {
+result = false;
+}
+}
+return result;
+}
+
+void recompute_mapper() {
+player_mapper.delete_all();
+for(int i=0; i < peer_list.length(); i++) {
+PeerItem@ p = peer_list[i];
+player_mapper.set(p.name, i);
+}
+}
+
+void add_color(string name, string color) {
+if (color == "blue") {
+blue_count++;
+blue_name.insert_last(name);
+} else {
+red_count++;
+red_name.insert_last(name);
+}
+assert(red_count == red_name.length());
+assert(blue_count == blue_name.length());
+}
+
+void remove_color(string name, string color) {
+if (color == "blue") {
+blue_count--;
+int idx = blue_name.find(name);
+blue_name.remove_at(idx);
+} else {
+red_count--;
+int idx = red_name.find(name);
+red_name.remove_at(idx);
+}
+assert(red_count == red_name.length());
+assert(blue_count == blue_name.length());
+}
+}

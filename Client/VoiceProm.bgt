@@ -1,0 +1,18 @@
+sound_pool pool_prom;
+void voiceProm(){
+if (key_pressed(KEY_F)){
+pool_prom.play_stationary("pop_open.ogg",false);
+
+while(!key_pressed(KEY_F)){
+if (key_pressed(KEY_A)){
+pool_prom.play_stationary("Attack.ogg",false);
+break;
+}
+if (key_pressed(KEY_D)){
+pool_prom.play_stationary("Protect.ogg",false);
+break;
+}
+}
+pool_prom.play_stationary("pop_close.ogg",false);
+}
+}

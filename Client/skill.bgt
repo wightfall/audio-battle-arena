@@ -1,0 +1,465 @@
+#include "geometry.bgt"
+#include "interface.bgt"
+
+class Skill {
+timer cooldown_timer;
+double cooldown = 10;
+double base_damage = 50;
+double[] level_damage = {50, 100, 200};
+double[] level_cooldown = {10, 8, 5};
+int level = 1;
+int max_level = 3;
+int attack_mode = 1;
+double attack_range = 10;
+double attack_half_width = 2;
+bool hero_damage = true;
+bool creep_damage = true;
+bool Monster_damage = true;
+bool tower_damage = true;
+hero@ current_hero; //The owner of the skill
+
+Skill(hero@ hero) {
+@this.current_hero = hero;
+}
+
+double compute_damage() {
+int chance = random(1, 100);
+if (chance <= this.current_hero.critical_chance) {
+return this.base_damage *2;
+} else {
+return this.base_damage;
+}
+}
+
+bool upgrade_skill() {
+if (level >= max_level) {
+return false;
+}
+this.base_damage = level_damage[level];
+this.cooldown = level_cooldown[level];
+this.level++;
+return true;
+}
+
+void affect_hero(hero h) {
+//please overwrite this method in subclass
+//h.take_physical_damage(compute_damage());
+}
+
+void affect_creep(creep c) {
+//please overwrite this method in subclass
+//c.take_physical_damage(compute_damage());
+}
+
+void affect_Monster(Monster m) {
+//please overwrite this method in subclass
+//m.take_physical_damage(compute_damage());
+}
+
+void affect_tower(tower t) {
+//please overwrite this method in subclass
+//t.take_physical_damage(compute_damage());
+}
+
+void use_skill() {
+if (cooldown_timer.elapsed <= 100*cooldown) {
+return;
+}
+cooldown_timer.restart();
+if (attack_mode == 1) {
+attack_linear_obstruct();
+} else if (attack_mode == 2) {
+attack_linear_non_obstruct();
+} else if (attack_mode == 3) {
+attack_triangle_obstruct();
+} else if (attack_mode == 4) {
+attack_triangle_non_obstruct();
+} else if (attack_mode == 5) {
+attack_radial_obstruct();
+} else if (attack_mode == 6) {
+attack_radial_non_obstruct();
+}
+}
+
+void attack_linear_obstruct() {
+double h_length = 1000000;
+double c_length = 1000000;
+double m_length = 1000000;
+double t_length = 1000000;
+hero@ target_hero;
+creep@ target_creep;
+Monster@ target_Monster;
+tower@ target_tower;
+bool is_found = false;
+vector cur_pos(h1.x, h1.y);
+vector edge = project_forward(cur_pos, h1.direction, attack_range);
+if (hero_damage) {
+for(int i=0; i < h.length(); i++) {
+vector target(h[i].x, h[i].y);
+double distance = vector_distance(cur_pos, target);
+if (colinear_check(target, cur_pos, edge) and distance < h_length and this.current_hero.color != h[i].color) {
+h_length = distance;
+@target_hero = h[i];
+is_found = true;
+}
+}
+}
+if (creep_damage) {
+if (this.current_hero.color == "blue") {
+for(int i=0; i < c_red.length(); i++) {
+vector target(c_red[i].x, c_red[i].y);
+double distance = vector_distance(cur_pos, target);
+if (colinear_check(target, cur_pos, edge) and distance < c_length) {
+c_length = distance;
+@target_creep = c_red[i];
+is_found = true;
+}
+}
+} else {
+for(int i=0; i < c_blue.length(); i++) {
+vector target(c_blue[i].x, c_blue[i].y);
+double distance = vector_distance(cur_pos, target);
+if (colinear_check(target, cur_pos, edge) and distance < c_length) {
+c_length = distance;
+@target_creep = c_blue[i];
+is_found = true;
+}
+}
+}
+}
+if (Monster_damage) {
+for(int i=0; i < mon.length(); i++) {
+vector target(mon[i].x, mon[i].y);
+double distance = vector_distance(cur_pos, target);
+if (colinear_check(target, cur_pos, edge) and distance < m_length) {
+m_length = distance;
+@target_Monster = mon[i];
+is_found = true;
+}
+}
+}
+if (tower_damage) {
+for(int i=0; i < tw.length(); i++) {
+vector target(tw[i].x, tw[i].y);
+double distance = vector_distance(cur_pos, target);
+if (colinear_check(target, cur_pos, edge) and distance < t_length and this.current_hero.color != tw[i].color) {
+t_length = distance;
+@target_tower = tw[i];
+is_found = true;
+}
+}
+}
+if (is_found) {
+if (h_length <= c_length and h_length <= m_length and h_length <= t_length) {
+affect_hero(target_hero);
+} else if (c_length <= h_length and c_length <= m_length and c_length <= t_length) {
+affect_creep(target_creep);
+} else if (m_length <= c_length and m_length <= h_length and m_length <= t_length) {
+affect_Monster(target_Monster);
+} else if (t_length <= c_length and t_length <= m_length and t_length <= h_length) {
+affect_tower(target_tower);
+}
+}
+}
+
+void attack_triangle_obstruct() {
+double h_length = 1000000;
+double c_length = 1000000;
+double m_length = 1000000;
+double t_length = 1000000;
+hero@ target_hero;
+creep@ target_creep;
+Monster@ target_Monster;
+tower@ target_tower;
+bool is_found = false;
+vector cur_pos(h1.x, h1.y);
+vector edge = project_forward(cur_pos, h1.direction, attack_range);
+if (hero_damage) {
+for(int i=0; i < h.length(); i++) {
+vector target(h[i].x, h[i].y);
+double distance = vector_distance(cur_pos, target);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and distance < h_length and this.current_hero.color != h[i].color) {
+h_length = distance;
+@target_hero = h[i];
+is_found = true;
+}
+}
+}
+if (creep_damage) {
+if (this.current_hero.color == "blue") {
+for(int i=0; i < c_red.length(); i++) {
+vector target(c_red[i].x, c_red[i].y);
+double distance = vector_distance(cur_pos, target);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and distance < c_length) {
+c_length = distance;
+@target_creep = c_red[i];
+is_found = true;
+}
+}
+} else {
+for(int i=0; i < c_blue.length(); i++) {
+vector target(c_blue[i].x, c_blue[i].y);
+double distance = vector_distance(cur_pos, target);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and distance < c_length) {
+c_length = distance;
+@target_creep = c_blue[i];
+is_found = true;
+}
+}
+}
+}
+if (Monster_damage) {
+for(int i=0; i < mon.length(); i++) {
+vector target(mon[i].x, mon[i].y);
+double distance = vector_distance(cur_pos, target);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and distance < m_length) {
+m_length = distance;
+@target_Monster = mon[i];
+is_found = true;
+}
+}
+}
+if (tower_damage) {
+for(int i=0; i < tw.length(); i++) {
+vector target(tw[i].x, tw[i].y);
+double distance = vector_distance(cur_pos, target);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and distance < t_length and this.current_hero.color != tw[i].color) {
+t_length = distance;
+@target_tower = tw[i];
+is_found = true;
+}
+}
+}
+alert("summary", h_length + "," + c_length + "," + m_length + "," + t_length + "\n" + is_found);
+if (is_found) {
+if (h_length <= c_length and h_length <= m_length and h_length <= t_length) {
+affect_hero(target_hero);
+} else if (c_length <= h_length and c_length <= m_length and c_length <= t_length) {
+affect_creep(target_creep);
+} else if (m_length <= c_length and m_length <= h_length and m_length <= t_length) {
+affect_Monster(target_Monster);
+} else if (t_length <= c_length and t_length <= m_length and t_length <= h_length) {
+affect_tower(target_tower);
+}
+}
+}
+
+void attack_radial_obstruct() {
+double h_length = 1000000;
+double c_length = 1000000;
+double m_length = 1000000;
+double t_length = 1000000;
+hero@ target_hero;
+creep@ target_creep;
+Monster@ target_Monster;
+tower@ target_tower;
+bool is_found = false;
+vector cur_pos(h1.x, h1.y);
+if (hero_damage) {
+for(int i=0; i < h.length(); i++) {
+vector target(h[i].x, h[i].y);
+double distance = vector_distance(cur_pos, target);
+if (radial_check(target, cur_pos, attack_range) and distance < h_length and this.current_hero.color != h[i].color) {
+h_length = distance;
+@target_hero = h[i];
+is_found = true;
+}
+}
+}
+if (creep_damage) {
+if (this.current_hero.color == "blue") {
+for(int i=0; i < c_red.length(); i++) {
+vector target(c_red[i].x, c_red[i].y);
+double distance = vector_distance(cur_pos, target);
+if (radial_check(target, cur_pos, attack_range) and distance < c_length) {
+c_length = distance;
+@target_creep = c_red[i];
+is_found = true;
+}
+}
+} else {
+for(int i=0; i < c_blue.length(); i++) {
+vector target(c_blue[i].x, c_blue[i].y);
+double distance = vector_distance(cur_pos, target);
+if (radial_check(target, cur_pos, attack_range) and distance < c_length) {
+c_length = distance;
+@target_creep = c_blue[i];
+is_found = true;
+}
+}
+}
+}
+if (Monster_damage) {
+for(int i=0; i < mon.length(); i++) {
+vector target(mon[i].x, mon[i].y);
+double distance = vector_distance(cur_pos, target);
+if (radial_check(target, cur_pos, attack_range) and distance < m_length) {
+m_length = distance;
+@target_Monster = mon[i];
+is_found = true;
+}
+}
+}
+if (tower_damage) {
+for(int i=0; i < tw.length(); i++) {
+vector target(tw[i].x, tw[i].y);
+double distance = vector_distance(cur_pos, target);
+if (radial_check(target, cur_pos, attack_range) and distance < t_length and this.current_hero.color != tw[i].color) {
+t_length = distance;
+@target_tower = tw[i];
+is_found = true;
+}
+}
+}
+alert("summary", h_length + "," + c_length + "," + m_length + "," + t_length + "\n" + is_found);
+if (is_found) {
+if (h_length <= c_length and h_length <= m_length and h_length <= t_length) {
+affect_hero(target_hero);
+} else if (c_length <= h_length and c_length <= m_length and c_length <= t_length) {
+affect_creep(target_creep);
+} else if (m_length <= c_length and m_length <= h_length and m_length <= t_length) {
+affect_Monster(target_Monster);
+} else if (t_length <= c_length and t_length <= m_length and t_length <= h_length) {
+affect_tower(target_tower);
+}
+}
+}
+
+void attack_linear_non_obstruct() {
+vector cur_pos(h1.x, h1.y);
+vector edge = project_forward(cur_pos, h1.direction, attack_range);
+if (hero_damage) {
+for(int i=0; i < h.length(); i++) {
+vector target(h[i].x, h[i].y);
+if (colinear_check(target, cur_pos, edge) and this.current_hero.color != h[i].color) {
+affect_hero(h[i]);
+}
+}
+}
+if (creep_damage) {
+if (this.current_hero.color == "blue") {
+for(int i=0; i < c_red.length(); i++) {
+vector target(c_red[i].x, c_red[i].y);
+if (colinear_check(target, cur_pos, edge)) {
+affect_creep(c_red[i]);
+}
+}
+} else {
+for(int i=0; i < c_blue.length(); i++) {
+vector target(c_blue[i].x, c_blue[i].y);
+if (colinear_check(target, cur_pos, edge)) {
+affect_creep(c_blue[i]);
+}
+}
+
+}
+}
+if (Monster_damage) {
+for(int i=0; i < mon.length(); i++) {
+vector target(mon[i].x, mon[i].y);
+if (colinear_check(target, cur_pos, edge)) {
+affect_Monster(mon[i]);
+}
+}
+}
+if (tower_damage) {
+for(int i=0; i < tw.length(); i++) {
+vector target(tw[i].x, tw[i].y);
+if (colinear_check(target, cur_pos, edge) and this.current_hero.color != tw[i].color) {
+affect_tower(tw[i]);
+}
+}
+}
+}
+
+void attack_triangle_non_obstruct() {
+vector cur_pos(h1.x, h1.y);
+vector edge = project_forward(cur_pos, h1.direction, attack_range);
+if (hero_damage) {
+for(int i=0; i < h.length(); i++) {
+vector target(h[i].x, h[i].y);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and this.current_hero.color != h[i].color) {
+affect_hero(h[i]);
+}
+}
+}
+if (creep_damage) {
+if (this.current_hero.color == "blue") {
+for(int i=0; i < c_red.length(); i++) {
+vector target(c_red[i].x, c_red[i].y);
+if (triangle_check(target, cur_pos, edge, attack_half_width)) {
+affect_creep(c_red[i]);
+}
+}
+} else {
+for(int i=0; i < c_blue.length(); i++) {
+vector target(c_blue[i].x, c_blue[i].y);
+if (triangle_check(target, cur_pos, edge, attack_half_width)) {
+affect_creep(c_blue[i]);
+}
+}
+}
+}
+if (Monster_damage) {
+for(int i=0; i < mon.length(); i++) {
+vector target(mon[i].x, mon[i].y);
+if (triangle_check(target, cur_pos, edge, attack_half_width)) {
+affect_Monster(mon[i]);
+}
+}
+}
+if (tower_damage) {
+for(int i=0; i < tw.length(); i++) {
+vector target(tw[i].x, tw[i].y);
+if (triangle_check(target, cur_pos, edge, attack_half_width) and this.current_hero.color != tw[i].color) {
+affect_tower(tw[i]);
+}
+}
+}
+}
+
+void attack_radial_non_obstruct() {
+vector cur_pos(h1.x, h1.y);
+if (hero_damage) {
+for(int i=0; i < h.length(); i++) {
+vector target(h[i].x, h[i].y);
+if (radial_check(target, cur_pos, attack_range) and this.current_hero.color != h[i].color) {
+affect_hero(h[i]);
+}
+}
+}
+if (creep_damage) {
+if (this.current_hero.color == "blue") {
+for(int i=0; i < c_red.length(); i++) {
+vector target(c_red[i].x, c_red[i].y);
+if (radial_check(target, cur_pos, attack_range)) {
+affect_creep(c_red[i]);
+}
+}
+} else {
+for(int i=0; i < c_blue.length(); i++) {
+vector target(c_blue[i].x, c_blue[i].y);
+if (radial_check(target, cur_pos, attack_range)) {
+affect_creep(c_blue[i]);
+}
+}
+}
+}
+if (Monster_damage) {
+for(int i=0; i < mon.length(); i++) {
+vector target(mon[i].x, mon[i].y);
+if (radial_check(target, cur_pos, attack_range)) {
+affect_Monster(mon[i]);
+}
+}
+}
+if (tower_damage) {
+for(int i=0; i < tw.length(); i++) {
+vector target(tw[i].x, tw[i].y);
+if (radial_check(target, cur_pos, attack_range) and this.current_hero.color != tw[i].color) {
+affect_tower(tw[i]);
+}
+}
+}
+}
+}

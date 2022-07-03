@@ -1,0 +1,6 @@
+Creep*
+menu not get any update from server
+position sound before main_loop function
+host hit escape to leave room and create room again, it play sound leave room and message player was left the room, and play sound enter room after create room with message host join the room
+Dialogue ask before exiting the room
+sound.load_from_memory for creep, monster, tower

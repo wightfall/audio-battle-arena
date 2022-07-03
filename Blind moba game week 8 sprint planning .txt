@@ -1,0 +1,6 @@
+Week8
+select hero menu
+tower attack ทีละตัว
+skill assign ค่าต่างๆและ sound
+แก้ bug อื่นๆ
+เปลี่ยนไปใช้ sound pool

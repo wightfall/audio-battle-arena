@@ -1,0 +1,144 @@
+sound_pool pool_hero;
+#include "skill_demo.bgt"
+
+class hero
+{
+string name = "";
+string color = "blue";
+string current_zone = "";
+int level = 1;
+double max_hp = 100;
+double max_mp = 10;
+double hp = max_hp;
+double mp = max_mp;
+int exp = 0;
+int max_exp = 1200;
+Skill@ skill1;
+Skill@ skill2;
+Skill@ skill3;
+double phy_atk = 10;
+double mag_atk = 10;
+double phy_def = 0;
+double mag_def = 0;
+int lifesteal = 0;
+int cd_reduction = 0;
+int critical_chance = 0;
+int attack_speed = 0;
+double hp_regen = 2;
+double mp_regen = 1;
+int x, y;
+Inventory inv(this);
+int money = 1000;
+int direction = 2;
+int walk_speed = 10;
+int kill_count = 0;
+timer kill_count_timer;
+hero() {
+TestSkill1 s1(this);
+TestSkill2 s2(this);
+TestSkill3 s3(this);
+@skill1 = s1;
+@skill2 = s2;
+@skill3 = s3;
+}
+
+void set_location(int x, int y)
+{
+this.x = x;
+this.y = y;
+}
+
+void show_health(){
+text_speak_interrupt("Your health is "+int(h1.hp)+".");
+}
+void show_money(){
+text_speak_interrupt("You have "+h1.money+" Baht.");
+}
+void say_got_money()
+{
+text_speak_interrupt("You got 100 baht.");
+}
+void show_location()
+{
+text_speak_interrupt("x = " + x+"y = "+ y+".");
+}
+void show_inventory() {
+this.inv.show_inventory();
+}
+
+void use_skill(int n) {
+if (n == 1) {
+skill1.use_skill();
+pool_hero.play_stationary("test1.ogg",false);
+} else if (n == 2) {
+skill2.use_skill();
+pool_hero.play_stationary("test2.ogg",false);
+} else if (n == 3) {
+skill3.use_skill();
+pool_hero.play_stationary("test3.ogg",false);
+} else {
+assert(false);
+}
+}
+
+int given_exp(){
+return 250 + (50 * this.level);
+}
+
+void check_lvl_up(){
+bool lvl_up = false;
+if(this.level == 1){
+if(this.exp >= this.max_exp){
+this.level += 1;
+this.exp -= 1200;
+this.max_exp = 2000;
+lvl_up = true;
+}
+} else if(this.level >= 2 and this.level <= 5){
+if(this.exp >= this.max_exp){
+this.level += 1;
+this.exp -= 2000;
+if(this.level == 6){
+this.max_exp = 3500;
+}
+lvl_up = true;
+}
+} else if(this.level >= 6 and this.level <=10){
+if(this.exp >= this.max_exp){
+this.level += 1;
+this.exp -= 3500;
+if(this.level == 11){
+this.max_exp = 4700;
+}
+lvl_up = true;
+}
+} else if(this.level >=11 and this.level <= 13){
+if(this.exp >= this.max_exp){
+this.level += 1;
+this.exp -= 4700;
+if(this.level == 14){
+this.max_exp = 6800;
+}
+lvl_up = true;
+}
+} else if(this.level == 14){
+if(this.exp >= this.max_exp){
+this.level += 1;
+lvl_up = true;
+}
+}
+if(lvl_up){
+lvl_up = false;
+text_speak_interrupt(h1.name+"Level up "+"and now level is "+h1.level);
+pool_hero.play_stationary("levelup.ogg",false);
+this.max_hp += 10;
+this.max_mp += 10;
+this.phy_atk += 10;
+this.mag_atk += 10;
+this.phy_def += 10;
+this.mag_def += 10;
+send_reliable_msg(1, 0, "player", "update_player", this.name, "update_lvl", this.level);
+}
+}
+
+}

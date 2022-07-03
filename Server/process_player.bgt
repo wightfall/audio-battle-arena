@@ -1,0 +1,39 @@
+
+dictionary player_to_id;
+int count = 0;
+
+void process_player(network_event event, string[] data) {
+string subtopic = data[1];
+if (subtopic == "player_login") {
+handle_player_login(event.peer_id, data);
+} else if (subtopic == "delete"){
+handle_delete(event.peer_id, data);
+} else {
+handle_other(event, data);
+}
+}
+
+void handle_player_login(int peer_id, string[] data) {
+assert(data.length() == 3);
+string name = data[2];
+bool is_found = player_to_id.exists(name);
+if (is_found) {
+not_authorize_error(peer_id);
+} else {
+send_reliable_msg(peer_id, 0, "player", "login_success", name);
+player_to_id.set(name, peer_id);
+}
+}
+
+void handle_other(network_event event, string[] data) {
+assert(data.length() >= 3);
+string name = data[2];
+room_mgr.pass_message(name, event.message, event.peer_id);
+}
+
+void handle_delete(int peer_id, string[] data) {
+assert(data.length() == 3);
+string name = data[2];
+assert(player_to_id.exists(name));
+player_to_id.delete(name);
+}

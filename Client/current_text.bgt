@@ -1,0 +1,34 @@
+string current_text(int x, int y)
+{
+if (h1.x >= map_x/5 and h1.x <= 2*map_x/5 and h1.y >= map_y/10 and h1.y <= map_y-map_y/10)
+{
+if (y >= 0 and y <= 100)
+{
+return "Grass Blue Zone";
+}
+else
+{
+return "Grass Red Zone";
+}
+}
+else if (h1.x >= 3*map_x/5 and h1.x <= 4*map_x/5 and h1.y >= map_y/10 and h1.y <= map_y-map_y/10)
+{
+if (y >= 0 and y <= 100)
+{
+return "Grass Blue Zone";
+}
+else
+{
+return "Grass Red Zone";
+}
+}
+else if (x >= 0 and x<= 100 and y >= 0 and y <= 100)
+{
+return "Blue Zone";
+}
+else if (x >= 0 and x <= 100 and y >= 101 and y <= 200)
+{
+return "Red Zone";
+}
+return "";
+}

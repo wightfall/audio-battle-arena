@@ -1,0 +1,18 @@
+http download;
+void getmotd()
+{
+string motd=download.get("http://wightfall.net/motd.txt");
+if(get_last_error()!=0)
+{
+alert("Error", "An error occured.\r\nDescription: " + motd + "");
+}
+else
+{
+while(download.progress)
+{
+motd+=download.request();
+wait(5);
+}
+text_speak("Message of the room: "+motd);
+}
+}

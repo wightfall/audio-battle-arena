@@ -1,0 +1,156 @@
+Formulas
+
+EXP requirement to reach level n
+Level 2 = 1200 exp
+Level 3-6 = 2000 exp
+Level 7-11 = 3500 exp
+Level 12-14 = 4700 exp
+Level 15 = 6800 exp
+
+1 creep = 100 exp (gives only to the opposite team's hero near that creep)
+1 hero = 250 + 50*[target hero level] (gives globally to every heroes on the killing team)
+
+Basic attack (spacebar) = 100% Physical attack
+
+Skill's final damage = Skill's Damage * (Physical/Magical Damage multiplier)
+Physical Damage multiplier = 100/(100+Phy.Def) if Phy.Def >= 0
+Physical Damage multiplier = 2-{100/(100-Phy.Def)} if Phy.Def < 0
+Magical Damage multiplier = 100/(100+Mag.Def) if Mag.Def >= 0
+Magical Damage multiplier = 2-{100/(100-Mag.Def)} if Mag.Def < 0
+
+Mana required for using skill = Mana_Constant_Lv1/Mana_Constant_Lv2/Mana_Constant_Lv3
+
+Cooldown = ( CD_Lv1_constant/CD_Lv2_constant/CD_Lv3_constant ) * ( 100 - CD_Reduction ) / 100
+
+Lifesteal : restore the attacker's health when using basic attack by 100% Attack Damamge * Lifesteal%
+
+
+Sample Heroes
+
+Level n hero's status consists of :
+HP = Max Health, Max HP
+MP = Max Mana, Max MP
+HP Regeneration per 5 seconds (HP_Regen)
+MP Regeneration per 5 seconds (MP_Regen)
+Physical Defense (Phy_Def)
+Magical Defense (Mag_Def)
+Physical Attack (phy_atk)
+Magical Attack (mag_atk) *All hero starts with 0 magical attack
+Critical Damage *Critical can only occur with basic attack, and the skill that enhances the basic attack, or mentioned that it can deals critical damage
+Lifesteal (LS) *All hero starts with 0 lifesteal
+Move Speed (MS) *How many second it takes to move once
+Attack Range *How many block, from your hero, you can attack
+Attack Speed (AS) *Attack speed's range is between 0 to 2, as a hero with n attack speed can perform basic attack once every n second
+Cooldown Reduction (CD_Reduction)
+
+
+Every status that increase when level up must be calculated by the following formula 
+- Base Status + Growth Statistic * (n - 1) * (0.7025 + 0.0175 * (n-1))
+
+The following status are written as Status = Base Status + (Growth Statistic) if the status does not has a growth statistic, then the status cannot be increase by leveling up
+
+Annie, Mage, Range, Magical type hero
+HP = 524 + (88)
+MP = 418 + (25)
+HP Regeneration per 5 seconds = 5.5 + (0.55)
+MP Regeneration per 5 seconds = 8 + (0.8)
+Physical Defense = 19 + (4)
+Magical Defense = 30 + (0.5)
+Physical Attack = 50 + (2.63)
+Magical Attack = 0
+Critical Damage = 200%
+Move speed  = 0.35 
+Attack range  = 6 Blocks 
+Attack speed = 0.579 + (1.36%)
+Skill 1 : Deals magic damage at the target enemy for 80/150/220 + (75% Ability Power)
+Range : 6 Blocks
+Mana cost : 60/70/80 
+Cooldown : 6/5/4
+Skill 2 : Cast a cone-shaped magic in the front direction, dealing magic damage to enemies hit for 70/160/250 + (85% Ability Power)
+Range : 5 Blocks
+Mana cost : 90/100/110
+Cooldown : 9/8/7
+Skill 3 : Cast a circle-shaped magic in the front direction, dealing magic damage to enemies hit for 400/600/800 + (75% Ability Power)
+Range : 6 Blocks
+Mana cost : 150/140/130
+Cooldown : 60/50/40
+
+Ashe, Carry, Range, Physical type hero
+HP = 570 + (87)
+MP = 280 + (32)
+HP Regeneration per 5 seconds = 3.5 + (0.55)
+MP Regeneration per 5 seconds = 6.97 + (0.4)
+Physical Defense = 26 + (3.4)
+Magical Defense = 30 + (0.5)
+Physical Attack = 59 + (2.96)
+Magical Attack = 0
+Critical Damage = 200%
+Move speed = 0.325
+Attack Range = 6 Blocks
+Attack Speed = 0.658 + (3.33%)
+Skill 1 : Gain bonus attack speed 20/30/40% for 4 seconds 
+Mana cost : 50
+Cooldown : 9 
+Skill 2 : Fire arrows in a cone-shaped in the front direction dealing physical damage for 40/65/90 + (100% Attack Damage) and reduce hit enemies move speed 20% for 2 seconds
+Range : 8 Blocks
+Mana cost : 70/80/90
+Cooldown : 12/9/6
+Skill 3 : Shoot a giant arrow in the front direction dealing physical damage to the first enemy hit for 100/200/300 + (85% Attack Damage) and reduce hit enemy move speed 75% for 6 seconds
+Range : 20 Blocks
+Mana cost : 100/100/100
+Cooldown : 80/60/40
+
+Alistar, Tank, Melee, Magical type hero
+HP = 600 + (106)
+MP = 350 + (40)
+HP Regeneration per 5 seconds = 8.5 + (0.85)
+MP Regeneration per 5 seconds = 8.5 + (0.8)
+Physical Defense = 44 + (3.5)
+Magical Defense = 32 + (1.25)
+Physical Attack = 62 + (3.75)
+Magical Attack = 0
+Critical Damage = 200%
+Move speed = 0.33
+Attack Range = 2 Blocks
+Attack Speed = 0.625 + (2.125%)
+Skill 1 : Slams the ground around him, dealing magic damage for 60/140/220 + (50% Abilty Power) to all enemies in the area and stunning them for 1 second
+Range : 4 Blocks around alistar
+Mana cost : 65/75/85
+Cooldown : 15/13/11 
+Skill 2 : Dashes 4 blocks forward, dealing magic damage for enemies in the path for 55/165/275 + (70% Ability Power)
+Range : 4 Blocks
+Mana cost : 65/75/85
+Cooldown : 10/9/8
+Skill 3 : For 7 seconds, reduce all incoming damage received for 55/65/75%, increases move speed for 30% and dealing magic damage to all nearby enemies 40/60/80 + (20% Abilty Power) every 0.5 seconds
+Range : 4 Blocks
+Mana cost : 100/100/100
+Cooldown : 120/100/80
+
+Lulu, Support, Range, Magical type hero
+HP = 525 + (74)
+MP = 350 + (55)
+HP Regeneration per 5 seconds = 6 + (0.6)
+MP Regeneration per 5 seconds = 11 + (0.6)
+Physical Defense = 29 + (3.7)
+Magical Defense = 30 + (0.5)
+Physical Attack = 47 + (1.6)
+Magical Attack = 0
+Critical Damage = 200%
+Move speed = 0.330
+Attack Range = 6 Blocks
+Attack Speed = 0.625 + (2.25%)
+Skill 1 : Cast a magic bolt forward dealing magic damage to enemies hit, and slowing them for 60% for 2 seconds
+Magical damage : 70/140/210 + (40% Ability Power)
+Range : 8 blocks
+Mana cost : 50/60/70
+Cooldown : 7/7/7
+Skill 2 : Cast a spell onto all allied champions around her, granting them bonus attack speed and 30% movement speed for the next few seconds
+Duration : 3/3.5/4
+Range : 4 Blocks around lulu
+Mana cost : 100/120/140
+Cooldown : 15/14/13
+Skill 3 : Cast a spell onto one closest allied champion, granting them bonus attack range, bonus health, and attack damage for 5 seconds
+Range : 8 Blocks around lulu
+Bonus Attack Range : 2/3/4 Blocks
+Mana cost : 100/130/160
+Cooldown : 110/95/80

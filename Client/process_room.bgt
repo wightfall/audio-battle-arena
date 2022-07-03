@@ -1,0 +1,170 @@
+void process_room(network_event event, string[] data) {
+string subtopic = data[1];
+if (subtopic == "leave_success") {
+handle_leave_success(data);
+} else if (subtopic == "room_member") {
+handle_room_member(data);
+} else {
+alert("info", data[1]);
+}
+}
+
+void handle_create_success(string[] data) {
+assert(data.length() == 3);
+string color = data[2];
+text_speak_interrupt("Joining the room as " + color + " team, you are the host.");
+}
+
+void handle_join_success(string[] data) {
+assert(data.length() == 4);
+string name = data[2];
+string color = data[3];
+if (name == host_name) {
+text_speak_interrupt("You have just joined the room as " + color + " team.");
+} else {
+text_speak_interrupt(name + " has just joined the room as " + color + " team.");
+}
+}
+
+void handle_leave_success(string[] data) {
+assert(data.length() == 3);
+string name = data[2];
+text_speak_interrupt(name + " has just left the room.");
+}
+
+void handle_switch_success(string[] data) {
+assert(data.length() == 4);
+string name = data[2];
+string color = data[3];
+if (name == host_name) {
+text_speak_interrupt("Switched side to " + color + " team.");
+} else {
+text_speak_interrupt(name + " switched side to " + color + " team.");
+}
+}
+
+void handle_room_member(string[] data) {
+assert(data.length() == 6);
+string blue_count = data[2];
+string blue_member = data[3];
+string red_count = data[4];
+string red_member = data[5];
+text_speak_interrupt("There are " + blue_count + " members in blue team: " + blue_member + ", there are " + red_count + " members in red team: " + red_member);
+}
+
+void handle_start_prepare(string[] data) {
+assert(data.length() == 3);
+p.destroy_all();
+spool.destroy_all();
+//Music3.stop();
+text_speak_interrupt("Starting...");
+string raw = data[2];
+string[][] start_condition = deserialize_2d_array(raw);
+h.resize(0);
+h.resize(start_condition.length()-1);
+int h_idx = 0;
+for(int i=0; i < start_condition.length(); i++) {
+assert(start_condition[i].length() == 5);
+string name = start_condition[i][0];
+string color = start_condition[i][1];
+int start_x = string_to_number(start_condition[i][2]);
+int start_y = string_to_number(start_condition[i][3]);
+int start_dir = string_to_number(start_condition[i][4]);
+if(name == h1.name) {
+h1.color = color;
+h1.x = start_x;
+h1.y = start_y;
+h1.direction = start_dir;
+} else {
+h[h_idx].name = name;
+h[h_idx].color = color;
+h[h_idx].x = start_x;
+h[h_idx].y = start_y;
+h[h_idx].direction = start_dir;
+}
+p.play_stationary("birds8.ogg",true);
+
+//set up tower
+tw.resize(0);
+tw.resize(12);
+//Team Blue
+tw[0].tower_position(map_x/2, 0);
+tw[0].color = "blue";
+tw[0].type = "main";
+
+tw[1].tower_position((map_x*2/5)+2, map_y/20);
+tw[1].color = "blue";
+tw[1].type = "attack";
+
+tw[2].tower_position((map_x*3/5)-2, map_y/20);
+tw[2].color = "blue";
+tw[2].type = "attack";
+
+tw[3].tower_position(map_x / 10, map_y/10);
+tw[3].color = "blue";
+tw[3].type = "attack";
+
+tw[4].tower_position(map_x/2, map_y/10);
+tw[4].color = "blue";
+tw[4].type = "attack";
+
+tw[5].tower_position(map_x*9/10, map_y/10);
+tw[5].color = "blue";
+tw[5].type = "attack";
+
+//Team Red
+tw[6].tower_position(map_x/2, map_y);
+tw[6].color = "red";
+tw[6].type = "main";
+
+tw[7].tower_position((map_x*3/5)-2, map_y*19/20);
+tw[7].color = "red";
+tw[7].type = "attack";
+
+tw[8].tower_position((map_x*2/5)+2, map_y*19/20);
+tw[8].color = "red";
+tw[8].type = "attack";
+
+tw[9].tower_position(map_x*4/5, map_y*9/10);
+tw[9].color = "red";
+tw[9].type = "attack";
+
+tw[10].tower_position(map_x/2, map_y*9/10);
+tw[10].color = "red";
+tw[10].type = "attack";
+
+tw[11].tower_position(map_x/10, map_y-map_y/10);
+tw[11].color = "red";
+tw[11].type = "attack";
+
+spawn_monster();
+//handle other start game logic
+//start fortress sound
+for (int i=0;i<tw.length;i++){
+if(h1.direction == 2){
+sound_play_2d("Fortress.ogg", h1.x, h1.y, tw[i].x, tw[i].y, h1.direction, true);
+sound_play_2d("Attack2.ogg", h1.x, h1.y, tw[i].x, tw[i].y, h1.direction, true);
+} else if(h1.direction == 6){
+sound_play_2d("Fortress.ogg", h1.x, h1.y, tw[i].x, tw[i].y, h1.direction, true);
+sound_play_2d("Attack2.ogg", h1.x, h1.y, tw[i].x, tw[i].y, h1.direction, true);
+}
+}
+}
+//set up global condition
+in_session = true;
+room_menu_active = false;
+wait_active = false;
+}
+
+void handle_chat(string [] data){
+assert(data.length() == 4);
+string name = data[2];
+string message = data[3];
+
+if (name == h1.name){
+text_speak("You say "+message);
+}
+else{
+text_speak(name+" say "+message);
+}
+}

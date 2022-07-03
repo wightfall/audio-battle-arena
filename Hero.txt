@@ -1,0 +1,10 @@
+Jawahar	HP 1800	Cooldown 10	Mana	10	Physical Attack 40	Magical Attack 40	Physical Defense 80	Magical Defense 80	Critical Chance 1	Movement Speed 10
+Merial	HP 1800	Cooldown 10	Mana	10	Physical Attack 50	Magical Attack 40	Physical Defense 70	Magical Defense 80	Critical Chance 1	Movement Speed 10
+Ryn	HP 1700	Cooldown 10	Mana	10	Physical Attack 70	Magical Attack 50	Physical Defense 60	Magical Defense 60	Critical Chance 1	Movement Speed 10
+Luz	HP 1300	Cooldown 10	Mana	10	Physical Attack 70	Magical Attack 50	Physical Defense 60	Magical Defense 50	Critical Chance 1	Movement Speed 10
+Anastasia	HP 1300	Cooldown 10	Mana	10	Physical Attack 60	Magical Attack 55	Physical Defense 70	Magical Defense 50	Critical Chance 1	Movement Speed 10
+Eirlys	HP 1300	Cooldown 10	Mana	10	Physical Attack 50	Magical Attack 70	Physical Defense 50	Magical Defense 60	Critical Chance 1	Movement Speed 10
+Adriene	HP 1300	Cooldown 10	Mana	10	Physical Attack 70	Magical Attack 50	Physical Defense 50	Magical Defense 50	Critical Chance 1	Movement Speed 10
+Elzaphan	HP 1300	Cooldown 10	Mana	10	Physical Attack 65	Magical Attack 55	Physical Defense 60	Magical Defense 55	Critical Chance 1	Movement Speed 10
+Nicola	HP 1200	Cooldown 10	Mana	7	Physical Attack 60	Magical Attack 50	Physical Defense 50	Magical Defense 50	Critical Chance 1	Movement Speed 10
+Lexo	HP 1200	Cooldown 10	Mana	7	Physical Attack 65	Magical Attack 50	Physical Defense 45	Magical Defense 50	Critical Chance 1	Movement Speed 10

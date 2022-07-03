@@ -1,0 +1,40 @@
+void rand_step_concrete(int player){
+int r = random(0, Concrete.length-1);
+Concrete[r][player].stop();
+Concrete[r][player].play();
+}
+
+void rand_step_grass(int player){
+int r = random(0, Grass.length-1);
+Grass[r][player].stop();
+Grass[r][player].play();
+}
+
+void rand_player_hit(){
+int r = random(0, Hit.length-1);
+Hit[r].stop();
+Hit[r].play();
+}
+
+void rand_player_attack_creep(){
+int r = random(0, Attack_creep.length-1);
+Attack_creep[r].stop();
+Attack_creep[r].play();
+}
+
+void rand_player_attack_monster(){
+int r = random(0, attack_monster.length-1);
+attack_monster[r].stop();
+attack_monster[r].play();
+}
+
+void rand_my_concrete(){
+int r = random(0, player_concrete.length-1);
+player_concrete[r].stop();
+player_concrete[r].play();
+}
+void rand_my_grass(){
+int r = random(0, player_grass.length-1);
+player_grass[r].stop();
+player_grass[r].play();
+}

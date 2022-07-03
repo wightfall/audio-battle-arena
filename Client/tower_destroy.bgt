@@ -1,0 +1,7 @@
+
+void tower_destroy(int i){
+if (tw[i].hp > 0)
+{
+tw[i].hp = tw[i].hp-h1.phy_atk;
+}
+}

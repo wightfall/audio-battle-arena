@@ -1,0 +1,41 @@
+skill variable
+ในการสร้าง skill ใหม่ ให้ subclass class Skill แล้วทำการแก้ไขค่าของตัวแปลเหล่านี้ใน constructor
+double cooldown: ระยะเวลาที่ต้องรอก่อนจะออกสกิลใหม่ได้ หน่วยคือ 100 มิลลิวินาที
+double base_damage: ค่าความเสียหายเริ่มต้นของสกิล
+double[] level_damage: ค่าความเสียหายในเลเวลต่างๆ เช่นถ้าเป็น [50, 100, 150] แปลว่าเลเวลแรกจะมี damage 50 เลเวลสองคือ 100 และเลเวลสามคือ 150
+double[] level_cooldown: ค่าเวลาที่ต้องรอก่อนจะออกสกิลใหม่ได้ในแต่ละเลเวล เช่นถ้า [10, 9, 8] แปลว่าเลเวลแรกต้องรอ 1000 มิลลิวินาที เลเวลสองต้องรอ 900 มิลลิวินาที และเลเวลสาม ต้องรอ 800 มิลลิวินาที
+int max_level: จำนวนเลเวลสูงสุดของสกิล
+int attack_mode: รูปแบบการโจมตี มีด้วยกัน 6 รูปแบบ
+attack_mode=1 โจมตีเป็นเส้นตรง (กำหนดระยะโดย attack_range) โดนศัตรูที่อยู่ใกล้สุด
+attack_mode=2 โจมตีเป็นเส้นตรง (กำหนดระยะโดย attack_range) โดนศัตรูทุกตัวในระยะ
+attack_mode = 3 โจมตีเป็นสามเหลียม มียอดมุมอยู่ที่ผู้เล่น (กำหนดความสูงโดย attack_range และความกว้างฐานโดย attack_half_width โดยความกว้างฐาน = 2*attack_half_width) โดนศัตรูที่อยู่ใกล้สุด
+attack_mode = 4 โจมตีเป็นสามเหลียม มียอดมุมอยู่ที่ผู้เล่น (กำหนดความสูงโดย attack_range และความกว้างฐานโดย attack_half_width โดยความกว้างฐาน = 2*attack_half_width) โดนศัตรูทุกตัว
+attack_mode=5 โจมตีเป็นวงกลม (กำหนดรัศมีโดย attack_range) โดนศัตรูที่อยู่ใกล้สุด
+attack_mode=6 โจมตีเป็นวงกลม (กำหนดรัศมีโดย attack_range) โดนศัตรูทุกตัว
+double attack_range: กำหนดระยะการโจมตีของสกิล
+double attack_half_width: กำหนดความกว้างในการโจมตีของสกิล (ใช้กับ attack_mode ที่ 3 และ 4)
+bool hero_damage: กำหนดว่าสกิลจะทำความเสียหายกับฮีโร่หรือไม่
+bool creep_damage: กำหนดว่าสกิลจะทำความเสียหายกับครีปหรือไม่
+bool Monster_damage: กำหนดว่าสกิลจะทำความเสียหายกับมอนสเตอร์หรือไม่
+bool tower_damage: กำหนดว่าสกิลจะทำความเสียหายกับหอคอยหรือไม่
+load_sound(string sound_path) ใช้กำหนดเสียงของสกิล เช่น load_sound("sound/Skill/skill_01.ogg")void voiceProm(){
+if (key_pressed(KEY_F)){
+pop_open.stop();
+pop_open.play();
+
+while(!key_pressed(KEY_F)){
+if (key_pressed(KEY_A)){
+Attack.stop();
+Attack.play();
+break;
+}
+if (key_pressed(KEY_D)){
+Protect.stop();
+Protect.play();
+break;
+}
+}
+pop_close.stop();
+pop_close.play();
+}
+}

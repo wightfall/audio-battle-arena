@@ -1,0 +1,130 @@
+#include "m_pro.bgt"
+#include "item.bgt"
+#include "form.bgt"
+sound_pool pool_store;
+
+dynamic_menu_pro store_menu;
+StoreItem@[] store_item();
+
+void store(){
+if (key_pressed(KEY_S)){
+show_store_menu();
+}
+}
+
+string ask_for_quantity() {
+audio_form form;
+form.create_window("", true, false);
+if(screen_reader_is_running(4)){
+form.set_output_mode(NVDA);
+} else {
+form.set_output_mode(0);
+}
+int quantity_edit_box =form.create_input_box("&Enter the number of item that you want to buy: ");
+int ok_btn =form.create_button("&OK", true, false);
+int cancel_btn =form.create_button("&Cancel", false, true);
+string result;
+form.focus(quantity_edit_box);
+while (true) {
+form.monitor();
+wait(5);
+if (form.is_pressed(ok_btn)) {
+result = form.get_text(quantity_edit_box);
+break;
+} else if (form.is_pressed(cancel_btn)) {
+result = "";
+break;
+}
+}
+return result;
+}
+
+void load_store_item(bool from_file=true) {
+store_item.resize(0);
+if (from_file) {
+file store_file;
+store_file.open("item.txt", "r"); 
+string content = store_file.read();
+string[] lines = string_split(content, "\n", true);
+for(uint i=0; i < lines.length; i++) {
+string[] data = string_split(lines[i], "\t", true);
+StoreItem item(data[0], data[1], string_to_number(data[2]));
+store_item.insert_last(item);
+}
+} else {
+//load from server; not implemented yet
+}
+}
+
+void show_store_menu() {
+load_store_item(true);
+store_menu.reset(false);
+store_menu.wrap = false;
+store_menu.allow_escape = true;
+store_menu.enable_home_and_end = true;
+store_menu.enable_first_letter_navigation=true;
+store_menu.enable_up_and_down=true;
+store_menu.click_sound="menu_move.ogg";
+store_menu.edge_sound="menu_edge.ogg";
+store_menu.open_sound="menu_open.ogg";
+store_menu.repeat_items_at_edges=true;
+for(uint i=0; i < store_item.length; i++) {
+string name = store_item[i].name;
+int price = store_item[i].price;
+store_menu.add_item_tts(name + "," + price + " baht", name);
+}
+store_menu.add_item_tts("Go back", "go_back");
+menu_position = 1;
+store_menu.set_callback(store_menu_callback, "");
+int result = store_menu.run("Choose the item you want to buy: ", true);
+spool.play_stationary("menu_close.ogg",false);
+}
+
+int store_menu_callback(dynamic_menu_pro@ m, string data)  {
+int current_position = m.get_position();
+int size = m.get_item_count();
+menu_position = current_position;
+if (key_pressed(KEY_SPACE) and current_position != 0) {
+if (current_position == size) {
+text_speak_interrupt("Go back to the game");
+} else {
+int idx = current_position - 1;
+string description = store_item[idx].description;
+text_speak_interrupt(description);
+}
+}
+if (key_pressed(KEY_RETURN)) {
+if (current_position == size) {
+return size;
+}
+int idx = current_position-1;
+string name = store_item[idx].name;
+string description = store_item[idx].description;
+int price = store_item[idx].price;
+string raw_amount = ask_for_quantity();
+if (raw_amount == "") {
+text_speak_interrupt("Cancel");
+return 0;
+}
+if (!string_is_digits(raw_amount)) {
+text_speak_interrupt("Please only type number");
+pool_store.play_stationary("menu_deny.ogg",false);
+return 0;
+}
+int amount = string_to_number(raw_amount);
+if (price*amount > h1.money) {
+text_speak_interrupt("Insufficient money");
+pool_store.play_stationary("menu_deny.ogg",false);
+return 0;
+}
+int cost = price*amount;
+h1.money -= cost;
+Item@ item = item_factory(name, description);
+h1.inv.add(item, amount);
+pool_store.play_stationary("menu_buy.ogg",false);
+}
+if (key_pressed(KEY_SLASH)){
+h1.show_money();
+}
+return 0;
+}

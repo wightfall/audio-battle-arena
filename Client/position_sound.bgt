@@ -1,0 +1,15 @@
+void position_sound(){
+for (int i=0;i<tw.length;i++){
+position_sound_2d(TowerAttack[i], 0, 0, ((tw[i].x-h1.x)*sine(pi*h1.direction/4))-((tw[i].y-h1.y)*cosine(pi*h1.direction/4)), ((tw[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((tw[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+}
+for (int i=0;i<c_blue.length;i++){
+position_sound_2d(c_blue[i].walk, 0, 0, ((c_blue[i].x-h1.x)*sine(pi*h1.direction/4))-((c_blue[i].y-h1.y)*cosine(pi*h1.direction/4)), ((c_blue[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((c_blue[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+position_sound_2d(c_blue[i].creep_die_sound, 0, 0, ((c_blue[i].x-h1.x)*sine(pi*h1.direction/4))-((c_blue[i].y-h1.y)*cosine(pi*h1.direction/4)), ((c_blue[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((c_blue[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+position_sound_2d(c_blue[i].attack_sound, 0, 0, ((c_blue[i].x-h1.x)*sine(pi*h1.direction/4))-((c_blue[i].y-h1.y)*cosine(pi*h1.direction/4)), ((c_blue[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((c_blue[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+}
+for (int i=0;i<c_red.length;i++){
+position_sound_2d(c_red[i].walk, 0, 0, ((c_red[i].x-h1.x)*sine(pi*h1.direction/4))-((c_red[i].y-h1.y)*cosine(pi*h1.direction/4)), ((c_red[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((c_red[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+position_sound_2d(c_red[i].creep_die_sound, 0, 0, ((c_red[i].x-h1.x)*sine(pi*h1.direction/4))-((c_red[i].y-h1.y)*cosine(pi*h1.direction/4)), ((c_red[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((c_red[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+position_sound_2d(c_red[i].attack_sound, 0, 0, ((c_red[i].x-h1.x)*sine(pi*h1.direction/4))-((c_red[i].y-h1.y)*cosine(pi*h1.direction/4)), ((c_red[i].x-h1.x)*cosine(pi*h1.direction/4)) + ((c_red[i].y-h1.y)*sine(pi*h1.direction/4)), 1, 1, 10);
+}
+}

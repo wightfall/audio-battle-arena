@@ -1,0 +1,117 @@
+#include "m_pro.bgt"
+dynamic_menu_pro status_menu;
+void player_status(){
+if (key_pressed(KEY_ESCAPE)){
+option();
+}
+}
+void show_status_menu() {
+status_menu.reset(false);
+status_menu.wrap = false;
+status_menu.allow_escape = true;
+status_menu.enable_home_and_end = true;
+status_menu.enable_first_letter_navigation=true;
+status_menu.enable_up_and_down=true;
+status_menu.click_sound="menu_move.ogg";
+status_menu.edge_sound="menu_edge.ogg";
+status_menu.open_sound="menu_open.ogg";
+status_menu.repeat_items_at_edges=true;
+status_menu.add_item_tts("player "+h1.name);
+status_menu.add_item_tts("level "+h1.level);
+status_menu.add_item_tts("exp "+h1.exp+"/"+h1.max_exp);
+status_menu.add_item_tts("money "+h1.money+"baht");
+status_menu.add_item_tts("hp "+h1.hp);
+status_menu.add_item_tts("physical_attack "+h1.phy_atk);
+status_menu.add_item_tts("magical_attack "+h1.mag_atk);
+status_menu.add_item_tts("current location "+"x= "+h1.x+"y= "+h1.y);
+status_menu.add_item_tts("current team "+h1.color);
+status_menu.add_item_tts("current zone"+h1.current_zone);
+int result = status_menu.run("use up and down arrow key to check your status, hit enter or escape to close this menu",true);
+spool.play_stationary("menu_close.ogg",false);
+}
+void exit_room(){
+dynamic_menu_pro exit_room_menu;
+exit_room_menu.reset(true);
+exit_room_menu.wrap=false;
+exit_room_menu.allow_escape=true;
+exit_room_menu.enable_home_and_end=true;
+exit_room_menu.enable_first_letter_navigation=true;
+exit_room_menu.enable_up_and_down=true;
+exit_room_menu.click_sound="menu_move.ogg";
+exit_room_menu.edge_sound="menu_edge.ogg";
+exit_room_menu.open_sound="menu_open.ogg";
+exit_room_menu.repeat_items_at_edges=true;
+exit_room_menu.add_item_tts("yes","y");
+exit_room_menu.add_item_tts("no","n");
+int choice = exit_room_menu.run("Would you like to exit room now?",true);
+if(exit_room_menu.get_item_name(choice)=="y")
+{
+close_room();
+}
+if(exit_room_menu.get_item_name(choice)=="n")
+{
+text_speak("cancel");
+}
+else {
+text_speak("cancel");
+}
+}
+void close_room(){
+in_session;
+in_session = false;
+send_reliable_msg(server_peer_id, 0, "room", "leave_room", h1.name);
+send_reliable_msg(server_peer_id, 0, "player", "delete", h1.name);
+text_speak("exiting");
+spool.play_stationary("leave_room.ogg",false);
+wait(700);
+host.destroy();
+for (int i=0;i<tw.length;i++){
+}
+p.destroy_all();
+pool_hero.destroy_all();
+pool_attack.destroy_all();
+pool_r.destroy_all();
+pool_store.destroy_all();
+pool_tower.destroy_all();
+pool_prom.destroy_all();
+pool_walk.destroy_all();
+pool_beacon.destroy_all();
+pool_item.destroy_all();
+pool_monster.destroy_all();
+spool.destroy_all();
+pool_rotate.destroy_all();
+pool_creep.destroy_all();
+pool_death.destroy_all();
+pool_end.destroy_all();
+pool_history.destroy_all();
+starting = false;
+f.close();
+mainmenu();
+}
+void option(){
+dynamic_menu_pro status;
+status.reset(false);
+status.wrap = false;
+status.allow_escape = true;
+status.enable_home_and_end = true;
+status.enable_first_letter_navigation=true;
+status.enable_up_and_down=true;
+status.click_sound="menu_move.ogg";
+status.edge_sound="menu_edge.ogg";
+status.open_sound="menu_open.ogg";
+status.repeat_items_at_edges=true;
+status.add_item_tts("View player status","view");
+status.add_item_tts("Exit room","ex");
+int result = status.run("select option with up and down arrow keys, then hit enter to activate it",true);
+spool.play_stationary("menu_close.ogg",false);
+if(status.get_item_name(result)=="view")
+{
+wait(300);
+show_status_menu();
+}
+if(status.get_item_name(result)=="ex")
+{
+wait(300);
+exit_room();
+}
+}
